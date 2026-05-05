@@ -761,9 +761,10 @@
           ? state.currentWord.syllables[index].coda
           : pickSound('coda', bias);
       } else {
+        // Every syllable must start with a consonant onset
         if (state.locks[index].onset && state.currentWord && state.currentWord.syllables[index]) {
           onset = state.currentWord.syllables[index].onset;
-        } else if (isFirst || Math.random() < 0.7) {
+        } else {
           onset = pickSound('onset', bias);
         }
         if (state.locks[index].coda && state.currentWord && state.currentWord.syllables[index]) {
