@@ -1021,7 +1021,6 @@
         { key: 'vowels', title: 'Vowel Sounds', dot: 'vowel', chip: 'vowel', set: state.activeVowels },
         { key: 'codas', title: 'Ending Sounds', dot: 'coda', chip: 'coda', set: state.activeCodas }
       ];
-      let h = '';
       sections.forEach(sec => {
         const all = getSoundsForLevel(sec.key, 'master');
         h += `<div class="chip-section"><div class="chip-section-header"><div class="chip-section-title"><span class="dot ${sec.dot}"></span>${sec.title}<span style="font-weight:400;color:var(--color-text-muted);font-size:var(--text-xs);">(${sec.set.size}/${all.length})</span></div><div class="chip-section-actions"><button class="chip-action-btn" onclick="selectAll('${sec.key}')">All</button><button class="chip-action-btn" onclick="deselectAll('${sec.key}')">None</button></div></div><div class="chip-grid">`;
