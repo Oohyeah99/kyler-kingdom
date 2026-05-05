@@ -309,6 +309,62 @@
     .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: var(--radius-full); transition: var(--transition-fast); box-shadow: var(--shadow-sm); }
     .toggle.on::after { left: 18px; }
 
+    /* Info icon for dividers toggle */
+    .info-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--color-border); color: var(--color-text-secondary);
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      margin-left: 4px; line-height: 1; transition: var(--transition-fast);
+      user-select: none; flex-shrink: 0;
+    }
+    .info-icon:hover { background: var(--color-primary); color: white; }
+
+    /* Syllable splitting info modal */
+    .info-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; backdrop-filter: blur(4px);
+    }
+    .info-modal-overlay.visible { display: flex; }
+    .info-modal {
+      background: var(--color-surface); border-radius: var(--radius-lg);
+      max-width: 520px; width: 90%; max-height: 80vh; overflow-y: auto;
+      box-shadow: var(--shadow-lg); padding: var(--space-xl);
+      position: relative;
+    }
+    .info-modal-close {
+      position: absolute; top: var(--space-md); right: var(--space-md);
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      background: var(--color-border); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text); font-size: 18px; transition: var(--transition-fast);
+    }
+    .info-modal-close:hover { background: var(--color-primary); color: white; }
+    .info-modal h2 {
+      font-size: var(--text-xl); font-weight: 700; margin: 0 0 var(--space-md);
+      color: var(--color-text);
+    }
+    .info-modal p {
+      font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-secondary);
+      margin: 0 0 var(--space-md);
+    }
+    .info-modal .rule {
+      background: var(--color-surface-elevated); border-radius: var(--radius-md);
+      padding: var(--space-md); margin-bottom: var(--space-sm);
+      border-left: 3px solid var(--color-primary);
+    }
+    .info-modal .rule h3 {
+      font-size: var(--text-sm); font-weight: 600; margin: 0 0 var(--space-xs);
+      color: var(--color-text);
+    }
+    .info-modal .rule p {
+      font-size: var(--text-sm); margin: 0;
+    }
+    .info-modal .example {
+      font-family: 'Inter', monospace; font-weight: 600; color: var(--color-primary);
+    }
+
     /* Difficulty row */
     .difficulty-row { display: flex; justify-content: center; margin-bottom: var(--space-lg); overflow-x: auto; max-width: 100%; }
     .difficulty-row .pills { flex-shrink: 0; }
@@ -486,6 +542,7 @@
         <div class="toggle-item" onclick="toggleSyllableSep()">
           <div class="toggle" id="sylSepToggle"></div>
           <span>Dividers</span>
+          <span class="info-icon" onclick="event.stopPropagation(); showSyllableInfo()" title="How syllable splitting works">i</span>
         </div>
       </div>
 
@@ -902,6 +959,15 @@
       renderWordDisplay(); saveState();
     }
 
+    /* ============================================== SYLLABLE INFO MODAL */
+    function showSyllableInfo() {
+      document.getElementById('syllableInfoModal').classList.add('visible');
+    }
+
+    function hideSyllableInfo() {
+      document.getElementById('syllableInfoModal').classList.remove('visible');
+    }
+
     /* ============================================== TTS */
     function speakWord() {
       if (!state.currentWord) return;
@@ -1070,7 +1136,7 @@
       if (e.key === '2' && state.currentWord && !state.wordRated) rateWord('yellow');
       if (e.key === '3' && state.currentWord && !state.wordRated) rateWord('red');
       if ((e.key === 's' || e.key === 'S') && state.currentWord) speakWord();
-      if (e.key === 'Escape') closeAllPanels();
+      if (e.key === 'Escape') { closeAllPanels(); hideSyllableInfo(); }
     });
 
     /* ============================================== GO */
@@ -1084,5 +1150,45 @@
       init();
     }
   </script>
+
+  <!-- Syllable splitting info modal -->
+  <div class="info-modal-overlay" id="syllableInfoModal" onclick="hideSyllableInfo()">
+    <div class="info-modal" onclick="event.stopPropagation()">
+      <button class="info-modal-close" onclick="hideSyllableInfo()">&times;</button>
+      <h2>How Syllable Splitting Works</h2>
+      <p>When <strong>Dividers</strong> is turned on, the app splits words into syllables using simple rules designed to help young readers decode words more easily. These rules aren't strictly linguistic — they're optimized for how children learn to read.</p>
+
+      <div class="rule">
+        <h3>Rule 1: VCV — Move the consonant forward</h3>
+        <p>When a single consonant sits between two vowels, it moves to the next syllable.</p>
+        <p class="example">ba-sic &nbsp; vi-sit &nbsp; o-pen</p>
+      </div>
+
+      <div class="rule">
+        <h3>Rule 2: VCCV — Split between two consonants</h3>
+        <p>When two consonants are between vowels, split between them.</p>
+        <p class="example">hap-py &nbsp; bas-ket &nbsp; let-ter</p>
+      </div>
+
+      <div class="rule">
+        <h3>Rule 3: Keep clusters together</h3>
+        <p>Common consonant blends (bl, cl, tr, st, etc.) stay together and move to the next syllable.</p>
+        <p class="example">ta-ble &nbsp; a-pron &nbsp; ma-pic</p>
+      </div>
+
+      <div class="rule">
+        <h3>Rule 4: Handle "x" specially</h3>
+        <p>Since "x" sounds like "k" + "s", split before the "x".</p>
+        <p class="example">ex-it &nbsp; ax-on</p>
+      </div>
+
+      <div class="rule">
+        <h3>Rule 5: Keep it simple</h3>
+        <p>When multiple splits are possible, choose the one that makes the easiest syllables for young readers.</p>
+      </div>
+
+      <p style="margin-top: var(--space-md); font-size: var(--text-xs); opacity: 0.7;">Tip: Turn on <strong>Dividers</strong> and generate a word to see these rules in action!</p>
+    </div>
+  </div>
 </body>
 </html>
