@@ -38,14 +38,67 @@ Picture description: ${imageDescription}`,
   )
 }
 
-export async function generatePicturePrompt(): Promise<string> {
-  const text = await generateText(
-    'You create fun, kid-friendly image generation prompts. Keep it to 1-2 sentences. Make it colorful and exciting.',
-    `Give me ONE fun image prompt for a 6-year-old boy. It should describe an interesting scene with animals, kids, or fantasy situations.
-Examples: "A fluffy orange cat flying on a rainbow over a castle", "A little boy discovering a treasure chest on a pirate ship with dolphins"
+const PROMPT_CATEGORIES = [
+  {
+    name: 'everyday',
+    system: 'You create simple, everyday scene prompts for children\'s English storytelling practice. Keep it to 1-2 sentences. Focus on realistic, relatable situations.',
+    user: `Give me ONE image prompt for a 6-year-old boy practicing English storytelling. The scene should be from everyday life - parks, schools, homes, playgrounds, gardens, streets, markets, or nature. Include 1-2 clear subjects (people, animals, or objects) doing simple activities.
+
+Examples: "A boy and his dog playing with a ball in a sunny park", "A girl feeding ducks near a small pond in a garden", "Two children sharing snacks on a picnic blanket under a tree"
+
 Just give me the prompt, nothing else.`,
+    fallback: 'A boy and his dog playing in a sunny park'
+  },
+  {
+    name: 'fantasy',
+    system: 'You create fun fantasy scene prompts for children\'s English storytelling practice. Keep it to 1-2 sentences. Make it imaginative but not scary.',
+    user: `Give me ONE fantasy image prompt for a 6-year-old boy practicing English storytelling. Include magical creatures, enchanted places, or imaginary worlds, but keep it friendly and colorful.
+
+Examples: "A friendly dragon teaching puppies to blow sparkly smoke rings in a rainbow meadow", "A little wizard casting colorful spells in a garden of giant flowers"
+
+Just give me the prompt, nothing else.`,
+    fallback: 'A friendly dragon playing with puppies in a rainbow meadow'
+  },
+  {
+    name: 'adventure',
+    system: 'You create adventure scene prompts for children\'s English storytelling practice. Keep it to 1-2 sentences. Make it exciting but safe and fun.',
+    user: `Give me ONE adventure image prompt for a 6-year-old boy practicing English storytelling. Include exploration, discovery, or playful action, but keep it safe and child-friendly.
+
+Examples: "A boy and girl exploring a treehouse filled with old maps and toys", "Children building a sandcastle on a beach with colorful boats in the distance"
+
+Just give me the prompt, nothing else.`,
+    fallback: 'Children exploring a colorful treehouse filled with toys'
+  },
+  {
+    name: 'animals',
+    system: 'You create animal-focused scene prompts for children\'s English storytelling practice. Keep it to 1-2 sentences. Focus on cute, friendly animal interactions.',
+    user: `Give me ONE animal image prompt for a 6-year-old boy practicing English storytelling. Include animals in natural settings doing interesting or cute things.
+
+Examples: "A family of rabbits having a picnic in a flower field", "A baby elephant splashing in a shallow river with birds watching"
+
+Just give me the prompt, nothing else.`,
+    fallback: 'A family of rabbits having a picnic in a flower field'
+  },
+  {
+    name: 'school',
+    system: 'You create school and learning scene prompts for children\'s English storytelling practice. Keep it to 1-2 sentences. Focus on positive learning experiences.',
+    user: `Give me ONE school-themed image prompt for a 6-year-old boy practicing English storytelling. Include classroom activities, playground fun, or learning moments.
+
+Examples: "Children painting colorful pictures at a table in a sunny classroom", "Students planting seeds together in a school garden"
+
+Just give me the prompt, nothing else.`,
+    fallback: 'Children painting colorful pictures in a sunny classroom'
+  }
+]
+
+export async function generatePicturePrompt(): Promise<string> {
+  // Randomly select a category for variety
+  const category = PROMPT_CATEGORIES[Math.floor(Math.random() * PROMPT_CATEGORIES.length)]
+  const text = await generateText(
+    category.system,
+    category.user,
     100,
     1.0
   )
-  return text.trim() || 'A magical forest with colorful animals playing together'
+  return text.trim() || category.fallback
 }
