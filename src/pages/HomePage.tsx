@@ -61,7 +61,7 @@ export default function HomePage() {
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-kingdom-purple/10 mb-4 animate-float">
           <Crown className="w-12 h-12 text-kingdom-gold" />
         </div>
-        <h1 className="text-5xl md:text-6xl font-extrabold text-gradient mb-3">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-gradient mb-3" style={{ lineHeight: 1.2, overflow: 'visible' }}>
           Kyler Kingdom
         </h1>
         <p className="text-xl text-foreground/70 max-w-md mx-auto">
