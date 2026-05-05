@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --kingdom-purple: 270 65% 45%;
+    --kingdom-gold: 43 90% 55%;
+    --kingdom-green: 145 55% 45%;
+    --kingdom-sky: 200 70% 65%;
+
+    --background: 270 30% 97%;
+    --foreground: 270 40% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 270 40% 15%;
+
+    --border: 270 20% 88%;
+    --input: 270 20% 90%;
+    --ring: 270 65% 45%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-kingdom {
+    @apply inline-flex items-center justify-center rounded-full font-bold transition-all duration-200 
+           text-lg px-8 py-4 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 
+           disabled:cursor-not-allowed;
+  }
+
+  .btn-kingdom-primary {
+    @apply bg-kingdom-purple text-white hover:bg-kingdom-purple/90;
+  }
+
+  .btn-kingdom-gold {
+    @apply bg-kingdom-gold text-kingdom-purple hover:bg-kingdom-gold/90;
+  }
+
+  .btn-kingdom-green {
+    @apply bg-kingdom-green text-white hover:bg-kingdom-green/90;
+  }
+
+  .card-kingdom {
+    @apply rounded-2xl bg-card border-2 border-border p-6 transition-all duration-200 
+           hover:shadow-xl hover:-translate-y-1 hover:border-kingdom-gold/50 cursor-pointer;
+  }
+
+  .card-kingdom-coming-soon {
+    @apply rounded-2xl bg-gray-100 border-2 border-border/50 p-6 opacity-60 cursor-not-allowed;
+  }
+
+  .spinner {
+    @apply animate-spin h-8 w-8 border-4 border-kingdom-gold/30 border-t-kingdom-gold rounded-full;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--kingdom-purple)), hsl(var(--kingdom-gold)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-kingdom-gradient {
+    background: linear-gradient(135deg, hsl(var(--kingdom-purple)) 0%, hsl(var(--kingdom-green)) 100%);
+  }
+}
