@@ -816,6 +816,61 @@
       display.classList.add('word-animate');
     }
 
+    /* ============================================== CUSTOM SYLLABLE SPLITTING */
+    const VOWELS = ["a","e","i","o","u","y"];
+    const CLUSTERS = ["bl","br","cl","cr","dr","fl","fr","gl","gr","pl","pr","tr","sk","sl","sm","sn","sp","st","sw"];
+
+    function isVowel(char) {
+      return VOWELS.includes(char.toLowerCase());
+    }
+
+    function splitWord(word) {
+      word = word.toLowerCase();
+      if (word.length <= 2) return word;
+      let result = "";
+      let i = 0;
+
+      while (i < word.length) {
+        let c1 = word[i];
+        let c2 = word[i+1];
+        let c3 = word[i+2];
+        let c4 = word[i+3];
+
+        // Rule 4: Handle "x" — split before x
+        if (c2 === "x" && isVowel(c1)) {
+          result += c1 + "-";
+          i += 1;
+          continue;
+        }
+
+        // Rule 2 & 3: VCCV
+        if (isVowel(c1) && c2 && c3 && c4 && isVowel(c4)) {
+          let cluster = c2 + c3;
+          if (CLUSTERS.includes(cluster)) {
+            result += c1 + "-";
+            i += 1;
+          } else {
+            result += c1 + c2 + "-";
+            i += 2;
+          }
+          continue;
+        }
+
+        // Rule 1: VCV — move consonant to next syllable
+        if (isVowel(c1) && c2 && c3 && isVowel(c3)) {
+          result += c1 + "-";
+          i += 1;
+          continue;
+        }
+
+        // Default: add char
+        result += c1;
+        i += 1;
+      }
+
+      return result;
+    }
+
     /* ============================================== TOGGLES */
     function toggleSegmentation() {
       state.showSegments = !state.showSegments;

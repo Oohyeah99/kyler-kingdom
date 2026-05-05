@@ -1,7 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Sparkles, Lightbulb, RefreshCw, Loader2 } from 'lucide-react'
+import { ArrowLeft, Sparkles, Lightbulb, RefreshCw, Loader2, Eye, EyeOff, Images, X, Trash2 } from 'lucide-react'
 import { generateImage, generateStoryHints, generatePicturePrompt } from '../services/gemini'
+
+interface SavedPicture {
+  id: string
+  imageUrl: string
+  prompt: string
+  hints?: string
+  timestamp: number
+}
+
+const STORAGE_KEY = 'kyler_picture_gallery'
+
+function loadGallery(): SavedPicture[] {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY)
+    return data ? JSON.parse(data) : []
+  } catch { return [] }
+}
+
+function saveToGallery(pic: SavedPicture) {
+  const gallery = loadGallery()
+  gallery.unshift(pic)
+  // Keep max 50 pictures
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(gallery.slice(0, 50)))
+}
+
+function removeFromGallery(id: string) {
+  const gallery = loadGallery().filter(p => p.id !== id)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(gallery))
+}
 
 export default function PictureStoryPage() {
   const [imageData, setImageData] = useState<string | null>(null)
@@ -10,16 +39,35 @@ export default function PictureStoryPage() {
   const [hintLoading, setHintLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [imageDescription, setImageDescription] = useState<string>('')
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [showGallery, setShowGallery] = useState(false)
+  const [gallery, setGallery] = useState<SavedPicture[]>([])
+  const [reviewPicture, setReviewPicture] = useState<SavedPicture | null>(null)
+
+  useEffect(() => {
+    setGallery(loadGallery())
+  }, [])
 
   const handleGenerateImage = async () => {
     setGenerating(true)
     setError(null)
     setStoryHints(null)
+    setShowPrompt(false)
+    setReviewPicture(null)
     try {
       const prompt = await generatePicturePrompt()
       setImageDescription(prompt)
-      const base64Image = await generateImage(prompt)
-      setImageData(`data:image/png;base64,${base64Image}`)
+      const imageUrl = await generateImage(prompt)
+      setImageData(imageUrl)
+      // Auto-save to gallery
+      const pic: SavedPicture = {
+        id: Date.now().toString(),
+        imageUrl,
+        prompt,
+        timestamp: Date.now(),
+      }
+      saveToGallery(pic)
+      setGallery(loadGallery())
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -34,11 +82,33 @@ export default function PictureStoryPage() {
     try {
       const hints = await generateStoryHints(imageDescription)
       setStoryHints(hints)
+      // Update gallery entry with hints
+      const current = loadGallery()
+      const entry = current.find(p => p.prompt === imageDescription)
+      if (entry) {
+        entry.hints = hints
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(current))
+        setGallery(current)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setHintLoading(false)
     }
+  }
+
+  const handleReview = (pic: SavedPicture) => {
+    setImageData(pic.imageUrl)
+    setImageDescription(pic.prompt)
+    setStoryHints(pic.hints || null)
+    setReviewPicture(pic)
+    setShowGallery(false)
+    setShowPrompt(false)
+  }
+
+  const handleDelete = (id: string) => {
+    removeFromGallery(id)
+    setGallery(loadGallery())
   }
 
   return (
@@ -49,7 +119,57 @@ export default function PictureStoryPage() {
           Back
         </Link>
         <h1 className="text-2xl font-bold text-gradient">Picture Story</h1>
+        <div className="ml-auto">
+          <button
+            onClick={() => setShowGallery(!showGallery)}
+            className="btn-kingdom !bg-kingdom-purple/10 !text-kingdom-purple hover:!bg-kingdom-purple/20 !px-4 !py-2.5"
+          >
+            <Images className="w-5 h-5 mr-2" />
+            Gallery ({gallery.length})
+          </button>
+        </div>
       </header>
+
+      {/* Gallery overlay */}
+      {showGallery && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-16 px-4 overflow-y-auto">
+          <div className="bg-background rounded-2xl w-full max-w-3xl p-6 mb-8 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Picture Gallery</h2>
+              <button onClick={() => setShowGallery(false)} className="p-2 rounded-lg hover:bg-foreground/5">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            {gallery.length === 0 ? (
+              <p className="text-center text-foreground/50 py-12">No pictures saved yet. Generate some!</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {gallery.map((pic) => (
+                  <div key={pic.id} className="relative group">
+                    <button
+                      onClick={() => handleReview(pic)}
+                      className="w-full rounded-xl overflow-hidden border-2 border-border hover:border-kingdom-gold transition-colors"
+                    >
+                      <img src={pic.imageUrl} alt={pic.prompt} className="w-full aspect-[4/3] object-cover" />
+                      <div className="p-2 text-left">
+                        <p className="text-xs text-foreground/50">
+                          {new Date(pic.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(pic.id) }}
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <main className="max-w-4xl mx-auto px-6 pb-16">
         <div className="flex flex-wrap gap-4 mb-8">
@@ -91,7 +211,7 @@ export default function PictureStoryPage() {
             </button>
           )}
 
-          {imageData && (
+          {imageData && !reviewPicture && (
             <button
               onClick={handleGenerateImage}
               disabled={generating}
@@ -127,9 +247,28 @@ export default function PictureStoryPage() {
             </div>
 
             {imageDescription && (
-              <p className="text-center text-lg text-foreground/70 mb-6 italic">
-                "{imageDescription}"
-              </p>
+              <div className="text-center mb-6">
+                {showPrompt ? (
+                  <div className="inline-flex flex-col items-center gap-2">
+                    <p className="text-lg text-foreground/70 italic">"{imageDescription}"</p>
+                    <button
+                      onClick={() => setShowPrompt(false)}
+                      className="inline-flex items-center gap-1 text-sm text-foreground/40 hover:text-foreground/60 transition-colors"
+                    >
+                      <EyeOff className="w-3.5 h-3.5" />
+                      Hide prompt
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowPrompt(true)}
+                    className="inline-flex items-center gap-1 text-sm text-foreground/40 hover:text-foreground/60 transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Show prompt
+                  </button>
+                )}
+              </div>
             )}
 
             {hintLoading && (
