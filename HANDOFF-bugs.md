@@ -1,7 +1,7 @@
 # Kyler Kingdom - Bug Handoff Document
 
 **Date:** 2026-05-05
-**Live URL:** https://kyler.kreativeland.com
+**Live URL:** https://kylerkingdom.com
 **Vercel deployment URLs:** https://kyler-kingdom-o9dv7qlyg-kl-2167s-projects.vercel.app (latest)
 **Repo:** D:\Projects\KylerKingdom
 

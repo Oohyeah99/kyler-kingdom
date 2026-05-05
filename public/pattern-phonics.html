@@ -858,19 +858,14 @@
           html += '</div>';
         });
       } else {
-        // Blended mode: show full word, optionally with custom-decoded syllable splits
+        // Blended mode: show full word, optionally with dividers between generated syllables
         if (state.showSylSep) {
-          // Use custom VCV/VCCV splitting algorithm
-          const fullWord = state.currentWord.full;
-          const splitResult = splitWord(fullWord);
-          const parts = splitResult.split('-');
-
-          let blendedHtml = '';
-          parts.forEach((part, pi) => {
-            if (pi > 0) blendedHtml += `<span class="syl-sep">|</span>`;
-            blendedHtml += `<span class="word-segment blended">${part}</span>`;
+          const blendedParts = [];
+          syls.forEach((s, si) => {
+            if (si > 0) blendedParts.push(`<span class="syl-sep">|</span>`);
+            blendedParts.push(s.onset + s.vowel + s.coda);
           });
-          html += `<div class="segment-col"><span class="word-segment blended">${blendedHtml}</span>`;
+          html += `<div class="segment-col"><span class="word-segment blended">${blendedParts.join('')}</span>`;
         } else {
           // No dividers: just show the full word
           html += `<div class="segment-col"><span class="word-segment blended">${state.currentWord.full}</span>`;
@@ -1012,6 +1007,15 @@
     /* ============================================== SETTINGS PANEL */
     function renderSettingsPanel() {
       const body = document.getElementById('settingsPanelBody');
+      const validLevels = ['easy', 'medium', 'hard', 'expert', 'master'];
+
+      let h = '<div class="settings-section"><div class="section-subtitle">Difficulty Level</div>';
+      h += '<div class="difficulty-pills" style="display:flex;gap:6px;justify-content:center;margin-bottom:12px;">';
+      validLevels.forEach(level => {
+        h += `<button class="pill ${state.difficulty === level ? 'active' : ''}" onclick="setDifficulty('${level}');renderSettingsPanel();">${level.charAt(0).toUpperCase() + level.slice(1)}</button>`;
+      });
+      h += '</div></div>';
+
       const sections = [
         { key: 'onsets', title: 'Beginning Sounds', dot: 'onset', chip: 'onset', set: state.activeOnsets },
         { key: 'vowels', title: 'Vowel Sounds', dot: 'vowel', chip: 'vowel', set: state.activeVowels },
