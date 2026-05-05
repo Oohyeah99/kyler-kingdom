@@ -96,8 +96,11 @@
 
     button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
 
-    /* ============================================ BACK BUTTON */
-    .back-btn-row { display: flex; justify-content: flex-start; width: 100%; max-width: 600px; margin-bottom: var(--space-md); }
+    /* ============================================ TOP BAR — Back + Title + Utility */
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-sm) var(--space-md); width: 100%; position: relative; z-index: 10;
+    }
     .back-btn {
       display: flex; align-items: center; gap: 6px;
       padding: 8px 16px; border-radius: var(--radius-full);
@@ -108,24 +111,23 @@
     .back-btn:hover { background: var(--color-bg-warm); color: var(--color-text); border-color: var(--color-text-muted); }
     .back-btn svg { width: 18px; height: 18px; }
 
-    /* App title */
+    .utility-buttons { display: flex; gap: var(--space-xs); }
+
+    /* App title — beautified */
     .app-title {
-      font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.3px;
-      color: var(--color-text); margin-bottom: var(--space-lg); text-align: center;
+      text-align: center; padding: var(--space-sm) 0 var(--space-lg);
+      position: relative; z-index: 1;
     }
-
-    /* Difficulty row */
-    .difficulty-row { display: flex; justify-content: center; margin-top: var(--space-md); }
-
-    /* Utility buttons */
-    .utility-buttons { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
-
-    /* ============================================ HEADER — KEPT FOR PANELS REFERENCE ONLY */
-    .header { display: none; }
-    .header-left { display: flex; align-items: center; gap: var(--space-md); }
-    .header-title { font-size: var(--text-lg); font-weight: 700; letter-spacing: -0.3px; }
-    .header-subtitle { font-size: var(--text-sm); color: var(--color-text-muted); }
-    .header-actions { display: flex; align-items: center; gap: var(--space-sm); }
+    .app-title h1 {
+      font-size: 32px; font-weight: 800; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--color-onset) 0%, var(--color-vowel) 50%, var(--color-coda) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .app-title .subtitle {
+      font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 2px;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
 
     /* ============================================ ICON BUTTONS */
     .icon-btn {
@@ -147,9 +149,10 @@
       background: var(--color-bg-warm); padding: 3px; border-radius: var(--radius-full);
     }
     .pill {
-      padding: 6px 16px; border-radius: var(--radius-full);
+      padding: 6px 12px; border-radius: var(--radius-full);
       font-size: var(--text-sm); font-weight: 500;
       color: var(--color-text-secondary); transition: var(--transition-fast);
+      white-space: nowrap;
     }
     .pill:hover { color: var(--color-text); }
     .pill.active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); }
@@ -208,19 +211,19 @@
 
     /* ============================================ MAIN CONTENT */
     .main {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: calc(100vh - 65px); padding: var(--space-2xl) var(--space-lg); position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      min-height: 100vh; padding: 0 var(--space-lg) var(--space-2xl); position: relative;
     }
     .main::before {
-      content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+      content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
       width: 800px; height: 800px;
       background: radial-gradient(ellipse, var(--color-primary-glow) 0%, transparent 70%);
       pointer-events: none; opacity: 0.4;
     }
-    .word-area { position: relative; z-index: 1; text-align: center; margin-bottom: var(--space-xl); }
-    .word-label {
-      font-size: var(--text-sm); color: var(--color-text-muted);
-      text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; margin-bottom: var(--space-md);
+
+    .word-area {
+      position: relative; z-index: 1; text-align: center; width: 100%; max-width: 700px;
+      display: flex; flex-direction: column; align-items: center;
     }
 
     /* Word display — scales down with more syllables */
@@ -234,6 +237,11 @@
     .word-display.syl-2 { font-size: calc(var(--text-display) * 0.65); }
     .word-display.syl-3 { font-size: calc(var(--text-display) * 0.48); }
     .word-display.syl-4 { font-size: calc(var(--text-display) * 0.38); }
+
+    .word-empty {
+      color: var(--color-text-muted); font-weight: 400; font-size: var(--text-2xl);
+      letter-spacing: 0; font-style: italic;
+    }
 
     .syllable-group { display: flex; align-items: flex-start; }
 
@@ -259,8 +267,6 @@
     .word-segment.locked.onset-seg::after { background: var(--color-onset); opacity: 0.4; }
     .word-segment.locked.vowel-seg::after { background: var(--color-vowel); opacity: 0.4; }
     .word-segment.locked.coda-seg::after { background: var(--color-coda); opacity: 0.4; }
-
-    .word-empty { color: var(--color-text-muted); font-weight: 400; font-size: var(--text-2xl); letter-spacing: 0; }
 
     /* Segment controls */
     .seg-controls { display: flex; align-items: center; gap: 4px; margin-top: 20px; opacity: 0; transition: var(--transition-fast); }
@@ -289,19 +295,23 @@
     .seg-ctrl-btn.refresh-btn:hover.coda-ctrl { color: var(--color-coda); border-color: var(--color-coda-border); background: var(--color-coda-bg); }
 
     /* Toggles row */
-    .toggles-row { display: flex; align-items: center; gap: var(--space-lg); justify-content: center; margin-bottom: var(--space-xl); flex-wrap: wrap; }
-    .toggle-item { display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; }
+    .toggles-row { display: flex; align-items: center; gap: var(--space-md); justify-content: center; margin-bottom: var(--space-lg); flex-wrap: wrap; }
+    .toggle-item { display: flex; align-items: center; gap: var(--space-xs); cursor: pointer; }
     .toggle-item span { font-size: var(--text-sm); color: var(--color-text-secondary); }
     .toggle { position: relative; width: 36px; height: 20px; background: var(--color-border); border-radius: var(--radius-full); cursor: pointer; transition: var(--transition-fast); flex-shrink: 0; }
     .toggle.on { background: var(--color-primary); }
     .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: var(--radius-full); transition: var(--transition-fast); box-shadow: var(--shadow-sm); }
     .toggle.on::after { left: 18px; }
 
+    /* Difficulty row */
+    .difficulty-row { display: flex; justify-content: center; margin-bottom: var(--space-lg); overflow-x: auto; max-width: 100%; }
+    .difficulty-row .pills { flex-shrink: 0; }
+
     /* ============================================ ACTION BUTTONS */
-    .actions { display: flex; flex-direction: column; align-items: center; gap: var(--space-lg); position: relative; z-index: 1; }
+    .actions { display: flex; flex-direction: column; align-items: center; gap: var(--space-lg); position: relative; z-index: 1; margin-top: var(--space-md); }
     .primary-actions { display: flex; align-items: center; gap: var(--space-md); }
     .btn-generate {
-      padding: 14px 40px; background: var(--color-primary); color: white;
+      padding: 14px 48px; background: var(--color-primary); color: white;
       border-radius: var(--radius-full); font-size: var(--text-lg); font-weight: 700; letter-spacing: -0.3px;
       transition: var(--transition-base); box-shadow: 0 4px 16px var(--color-primary-glow);
     }
@@ -317,7 +327,7 @@
     .btn-speak:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-speak svg { width: 22px; height: 22px; }
 
-    /* ============================================ RATING */
+    /* ============================================ RATING (kept for progress panel stats, UI removed) */
     .rating-section { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
     .rating-label { font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 500; }
     .rating-buttons { display: flex; gap: var(--space-md); }
@@ -390,18 +400,18 @@
     /* ============================================ RESPONSIVE */
     @media (max-width: 640px) {
       :root { --panel-width: 100%; --text-display: 96px; }
-      .back-btn-row { padding: 0 var(--space-md); }
-      .toggles-row { gap: var(--space-md); }
-      .btn-generate { padding: 12px 30px; font-size: var(--text-base); }
+      .top-bar { padding: var(--space-xs) var(--space-sm); }
+      .app-title h1 { font-size: 26px; }
+      .toggles-row { gap: var(--space-sm); }
+      .btn-generate { padding: 12px 36px; font-size: var(--text-base); }
       .syl-separator { margin: 6px 6px; }
+      .difficulty-row { justify-content: center; }
     }
 
     ::selection { background: var(--color-primary); color: white; }
   </style>
 </head>
 <body>
-
-  <!-- HEADER BAR REMOVED — back button + title moved into body -->
 
   <!-- SETTINGS PANEL -->
   <div class="panel-overlay" id="settingsOverlay" onclick="closeAllPanels()"></div>
@@ -425,21 +435,35 @@
 
   <!-- MAIN CONTENT -->
   <main class="main">
-    <!-- Back button -->
-    <div class="back-btn-row">
+    <!-- Top bar: Back + Title + Utility buttons -->
+    <div class="top-bar">
       <button class="back-btn" onclick="goBack()" title="Back to Kyler Kingdom">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Back
       </button>
+      <div class="utility-buttons">
+        <button class="icon-btn" id="settingsBtn" onclick="togglePanel('settings')" title="Sound settings">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="icon-btn" id="progressBtn" onclick="togglePanel('progress')" title="Progress">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <span class="badge" id="progressBadge" style="display:none;"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Beautified title -->
+    <div class="app-title">
+      <h1>Pattern Phonics</h1>
+      <div class="subtitle">Sound it out</div>
     </div>
 
     <div class="word-area">
-      <div class="app-title">Pattern Phonics</div>
-
       <div class="word-display syl-1" id="wordDisplay">
         <span class="word-empty">Tap Generate to start</span>
       </div>
 
+      <!-- Controls row: syllables + toggles -->
       <div class="toggles-row">
         <span style="font-size:var(--text-sm);color:var(--color-text-muted);">syllables</span>
         <div class="pills" id="syllablePills">
@@ -459,33 +483,25 @@
         </div>
       </div>
 
-      <!-- Difficulty pills — moved below toggles -->
+      <!-- 5-level difficulty pills -->
       <div class="difficulty-row">
         <div class="pills" id="difficultyPills">
           <button class="pill active" data-level="easy" onclick="setDifficulty('easy')">Easy</button>
           <button class="pill" data-level="medium" onclick="setDifficulty('medium')">Medium</button>
           <button class="pill" data-level="hard" onclick="setDifficulty('hard')">Hard</button>
+          <button class="pill" data-level="expert" onclick="setDifficulty('expert')">Expert</button>
+          <button class="pill" data-level="master" onclick="setDifficulty('master')">Master</button>
         </div>
       </div>
-    </div>
 
-    <div class="actions">
-      <div class="primary-actions">
-        <button class="btn-generate" onclick="generateWord()">Generate</button>
-        <button class="btn-speak" id="speakBtn" onclick="speakWord()" disabled title="Hear pronunciation">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        </button>
-      </div>
-
-      <!-- Settings & Progress buttons — moved below generate -->
-      <div class="utility-buttons">
-        <button class="icon-btn" id="settingsBtn" onclick="togglePanel('settings')" title="Sound settings">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-        <button class="icon-btn" id="progressBtn" onclick="togglePanel('progress')" title="Progress">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-          <span class="badge" id="progressBadge" style="display:none;"></span>
-        </button>
+      <!-- Generate + Speak buttons — centered with word display -->
+      <div class="actions">
+        <div class="primary-actions">
+          <button class="btn-generate" onclick="generateWord()">Generate</button>
+          <button class="btn-speak" id="speakBtn" onclick="speakWord()" disabled title="Hear pronunciation">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -493,22 +509,28 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    /* ============================================== DATA MODEL */
+    /* ============================================== DATA MODEL — 5 LEVELS */
     const PHONICS_DATA = {
       onsets: {
         easy: ['b','c','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','z'],
-        medium: ['bl','br','cl','cr','dr','fl','fr','gl','gr','pl','pr','sc','sk','sl','sm','sn','sp','st','sw','tr','tw'],
-        hard: ['ch','ph','qu','sh','th','wh','wr','scr','shr','spl','spr','squ','str','thr']
+        medium: ['bl','br','cl','cr','dr','fl','fr','gl','gr','pl','pr'],
+        hard: ['sc','sk','sl','sm','sn','sp','st','sw','tr','tw','sh','th','ch','qu','wh'],
+        expert: ['scr','shr','spl','spr','squ','str','thr','ph','wr'],
+        master: []
       },
       vowels: {
         easy: ['a','e','i','o','u'],
-        medium: ['ai','ay','ee','ea','ie','oa','oo','ou','ow','ue','ar','er','ir','or','ur'],
-        hard: ['air','are','ear','eer','igh','ire','oor','ore','oi','oy','aw','au','ew','ure']
+        medium: ['ai','ay','ee','ea','ie','oa','oo'],
+        hard: ['ou','ow','ue','ar','er','ir','or','ur'],
+        expert: ['air','ear','eer','igh','ire','ore','oi','oy','aw','au','ew'],
+        master: ['are','oor','ure']
       },
       codas: {
         easy: ['b','d','g','k','l','m','n','p','s','t','x'],
-        medium: ['ch','ck','ff','ll','nd','ng','nk','nt','mp','sh','ss','th','lk','lt','lp','ft','sk','sp','st'],
-        hard: ['dge','tch','nch','ght','lth','nce','nge','nse','rch','rse','rth','sce']
+        medium: ['ch','ck','ff','ll','nd','ng','nk','nt','mp'],
+        hard: ['sh','ss','th','lk','lt','lp','ft','sk','sp','st'],
+        expert: ['dge','tch','nch','ght','nce','nge','nse','rch','rth'],
+        master: ['lth','rse','sce']
       }
     };
 
@@ -519,7 +541,7 @@
       showSegments: false,
       showSylSep: false,
       adaptiveMode: false,
-      currentWord: null,   // { syllables: [{ onset, vowel, coda }], full }
+      currentWord: null,
       activeOnsets: new Set(),
       activeVowels: new Set(),
       activeCodas: new Set(),
@@ -557,6 +579,9 @@
           state.activeVowels = new Set(p.activeVowels || []);
           state.activeCodas = new Set(p.activeCodas || []);
           if (p.locks) state.locks = p.locks;
+          // Migrate old difficulty values
+          const validLevels = ['easy', 'medium', 'hard', 'expert', 'master'];
+          if (!validLevels.includes(state.difficulty)) state.difficulty = 'easy';
           if (state.activeOnsets.size === 0 && state.activeVowels.size === 0 && state.activeCodas.size === 0) {
             applyDifficulty(state.difficulty);
           }
@@ -576,12 +601,18 @@
       } catch (e) {}
     }
 
-    /* ============================================== DIFFICULTY */
+    /* ============================================== DIFFICULTY — 5 LEVELS */
     function getSoundsForLevel(type, level) {
       const d = PHONICS_DATA[type];
       let s = [...d.easy];
-      if (level === 'medium' || level === 'hard') s = s.concat(d.medium);
-      if (level === 'hard') s = s.concat(d.hard);
+      if (level === 'medium' || level === 'hard' || level === 'expert' || level === 'master')
+        s = s.concat(d.medium);
+      if (level === 'hard' || level === 'expert' || level === 'master')
+        s = s.concat(d.hard);
+      if (level === 'expert' || level === 'master')
+        s = s.concat(d.expert);
+      if (level === 'master')
+        s = s.concat(d.master);
       return s;
     }
 
@@ -604,11 +635,9 @@
     function setSyllableCount(n) {
       state.syllableCount = n;
       document.querySelectorAll('#syllablePills .pill').forEach(el => el.classList.toggle('active', parseInt(el.dataset.syl) === n));
-      // Reset locks for new syllable config
       state.locks = Array.from({ length: 4 }, (_, i) => state.locks[i] || { onset: false, vowel: false, coda: false });
       saveState();
       if (state.currentWord) {
-        // Resize existing word or generate fresh
         generateWord();
       }
     }
@@ -657,13 +686,11 @@
 
       let onset = '', vowel = '', coda = '';
 
-      // Vowel is always present
       vowel = (state.locks[index].vowel && state.currentWord && state.currentWord.syllables[index])
         ? state.currentWord.syllables[index].vowel
         : pickSound('vowel', bias);
 
       if (isSingle) {
-        // Single syllable: always all 3 parts
         onset = (state.locks[index].onset && state.currentWord && state.currentWord.syllables[index])
           ? state.currentWord.syllables[index].onset
           : pickSound('onset', bias);
@@ -671,14 +698,11 @@
           ? state.currentWord.syllables[index].coda
           : pickSound('coda', bias);
       } else {
-        // Multi-syllable: allow partial
-        // Onset
         if (state.locks[index].onset && state.currentWord && state.currentWord.syllables[index]) {
           onset = state.currentWord.syllables[index].onset;
         } else if (isFirst || Math.random() < 0.7) {
           onset = pickSound('onset', bias);
         }
-        // Coda
         if (state.locks[index].coda && state.currentWord && state.currentWord.syllables[index]) {
           coda = state.currentWord.syllables[index].coda;
         } else if (isLast || Math.random() < 0.7) {
@@ -744,7 +768,6 @@
     function buildCtrl(sylIdx, segment, segClass, showLabel) {
       const isLocked = state.locks[sylIdx][segment];
       const hl = hasAnyLock();
-      const labels = { onset: 'Start', vowel: 'Mid', coda: 'End' };
       const lbl = showLabel ? `<span class="seg-ctrl-dot ${segClass}-dot"></span>` : '';
       return `<div class="seg-controls ${hl ? 'has-lock' : ''}">${lbl}<button class="seg-ctrl-btn lock-btn ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation();toggleLock(${sylIdx},'${segment}')" title="${isLocked ? 'Unlock' : 'Lock'}">${isLocked ? lockSvg : unlockSvg}</button><button class="seg-ctrl-btn refresh-btn ${segClass}-ctrl" onclick="event.stopPropagation();refreshSegment(${sylIdx},'${segment}')" title="Refresh">${refreshSvg}</button></div>`;
     }
@@ -771,7 +794,6 @@
           html += '</div>';
         });
       } else {
-        // Blended mode
         const blendedParts = [];
         syls.forEach((s, si) => {
           if (si > 0 && state.showSylSep) blendedParts.push(`<span style="color:var(--color-border);font-weight:300;margin:0 2px;">|</span>`);
@@ -810,7 +832,6 @@
     /* ============================================== TTS */
     function speakWord() {
       if (!state.currentWord) return;
-      // Ensure voices are loaded (Chrome requires this)
       const loadVoices = () => {
         const u = new SpeechSynthesisUtterance(state.currentWord.full);
         u.rate = 0.8; u.pitch = 1.0; u.lang = 'en-GB';
@@ -820,10 +841,8 @@
         speechSynthesis.cancel();
         speechSynthesis.speak(u);
       };
-      // Chrome sometimes needs a small delay for voices to load
       if (speechSynthesis.getVoices().length === 0) {
         speechSynthesis.onvoiceschanged = loadVoices;
-        // Trigger voice loading
         speechSynthesis.getVoices();
         setTimeout(loadVoices, 100);
       } else {
@@ -861,7 +880,7 @@
       ];
       let h = '';
       sections.forEach(sec => {
-        const all = getSoundsForLevel(sec.key, 'hard');
+        const all = getSoundsForLevel(sec.key, 'master');
         h += `<div class="chip-section"><div class="chip-section-header"><div class="chip-section-title"><span class="dot ${sec.dot}"></span>${sec.title}<span style="font-weight:400;color:var(--color-text-muted);font-size:var(--text-xs);">(${sec.set.size}/${all.length})</span></div><div class="chip-section-actions"><button class="chip-action-btn" onclick="selectAll('${sec.key}')">All</button><button class="chip-action-btn" onclick="deselectAll('${sec.key}')">None</button></div></div><div class="chip-grid">`;
         all.forEach(s => {
           h += `<button class="chip ${sec.set.has(s) ? 'active' : ''} ${sec.chip}" onclick="toggleSound('${sec.key}','${s}',this)">${s}</button>`;
@@ -878,7 +897,7 @@
     }
     function selectAll(type) {
       const m = { onsets: state.activeOnsets, vowels: state.activeVowels, codas: state.activeCodas };
-      getSoundsForLevel(type, 'hard').forEach(s => m[type].add(s));
+      getSoundsForLevel(type, 'master').forEach(s => m[type].add(s));
       renderSettingsPanel(); saveState();
     }
     function deselectAll(type) {
@@ -982,16 +1001,13 @@
     });
 
     /* ============================================== GO */
-    // Send back navigation to parent
     function goBack() {
       window.parent.postMessage('pattern-phonics:back', '*');
     }
 
-    // Ensure init runs regardless of DOM ready state (iframe timing)
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {
-      // DOM is already ready (common in iframe context)
       init();
     }
   </script>
