@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Crown, Sparkles, BookOpen, Palette, Music } from 'lucide-react'
+import { Crown, Sparkles, BookOpen, Music, LetterText } from 'lucide-react'
 
 const tools = [
   {
@@ -12,13 +12,13 @@ const tools = [
     path: '/picture-story',
   },
   {
-    id: 'drawing',
-    name: 'Drawing Pad',
-    description: 'Draw your own pictures!',
-    icon: Palette,
+    id: 'pattern-phonics',
+    name: 'Pattern Phonics',
+    description: 'Sound it out!',
+    icon: LetterText,
     color: 'gold',
-    available: false,
-    path: '#',
+    available: true,
+    path: '/pattern-phonics',
   },
   {
     id: 'reading',
