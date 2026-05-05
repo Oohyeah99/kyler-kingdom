@@ -1,25 +1,29 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function PatternPhonicsPage() {
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header with back button */}
-      <header className="flex items-center gap-4 px-6 py-4 bg-card border-b-2 border-border">
-        <Link to="/" className="btn-kingdom btn-kingdom-gold !px-5 !py-3 !text-base">
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back
-        </Link>
-        <h1 className="text-2xl font-bold text-gradient">Pattern Phonics</h1>
-      </header>
+  const navigate = useNavigate()
 
-      {/* Embedded Pattern Phonics */}
-      <div className="flex-1">
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data === 'pattern-phonics:back') {
+        navigate('/')
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [navigate])
+
+  return (
+    <div className="min-h-screen bg-[#faf7f4] flex flex-col">
+      {/* Embedded Pattern Phonics (full screen, back button is inside iframe) */}
+      <div className="flex-1 relative w-full h-full">
         <iframe
           src="/pattern-phonics.html"
           title="Pattern Phonics"
-          className="w-full border-0"
-          style={{ height: 'calc(100vh - 73px)' }}
+          className="w-full h-full border-0"
+          style={{ width: '100%', height: '100%', minHeight: '100vh' }}
+          allow="autoplay; microphone; speaker"
         />
       </div>
     </div>

@@ -96,15 +96,32 @@
 
     button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
 
-    /* ============================================ HEADER */
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: var(--space-md) var(--space-lg);
-      border-bottom: 1px solid var(--color-border-light);
-      position: sticky; top: 0; z-index: 100;
-      backdrop-filter: blur(12px);
-      background: rgba(255, 255, 255, 0.85);
+    /* ============================================ BACK BUTTON */
+    .back-btn-row { display: flex; justify-content: flex-start; width: 100%; max-width: 600px; margin-bottom: var(--space-md); }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--radius-full);
+      font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary);
+      background: var(--color-surface); border: 1.5px solid var(--color-border);
+      transition: var(--transition-fast);
     }
+    .back-btn:hover { background: var(--color-bg-warm); color: var(--color-text); border-color: var(--color-text-muted); }
+    .back-btn svg { width: 18px; height: 18px; }
+
+    /* App title */
+    .app-title {
+      font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.3px;
+      color: var(--color-text); margin-bottom: var(--space-lg); text-align: center;
+    }
+
+    /* Difficulty row */
+    .difficulty-row { display: flex; justify-content: center; margin-top: var(--space-md); }
+
+    /* Utility buttons */
+    .utility-buttons { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
+
+    /* ============================================ HEADER — KEPT FOR PANELS REFERENCE ONLY */
+    .header { display: none; }
     .header-left { display: flex; align-items: center; gap: var(--space-md); }
     .header-title { font-size: var(--text-lg); font-weight: 700; letter-spacing: -0.3px; }
     .header-subtitle { font-size: var(--text-sm); color: var(--color-text-muted); }
@@ -373,10 +390,8 @@
     /* ============================================ RESPONSIVE */
     @media (max-width: 640px) {
       :root { --panel-width: 100%; --text-display: 96px; }
-      .header { flex-wrap: wrap; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); }
-      .header .pills { order: 3; width: 100%; justify-content: center; }
-      .rating-buttons { gap: var(--space-sm); }
-      .btn-rate { padding: 10px 16px; min-width: 75px; }
+      .back-btn-row { padding: 0 var(--space-md); }
+      .toggles-row { gap: var(--space-md); }
       .btn-generate { padding: 12px 30px; font-size: var(--text-base); }
       .syl-separator { margin: 6px 6px; }
     }
@@ -386,31 +401,7 @@
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-left">
-      <div>
-        <div class="header-title">Pattern Phonics</div>
-        <div class="header-subtitle">Sound it out</div>
-      </div>
-    </div>
-
-    <div class="pills" id="difficultyPills">
-      <button class="pill active" data-level="easy" onclick="setDifficulty('easy')">Easy</button>
-      <button class="pill" data-level="medium" onclick="setDifficulty('medium')">Medium</button>
-      <button class="pill" data-level="hard" onclick="setDifficulty('hard')">Hard</button>
-    </div>
-
-    <div class="header-actions">
-      <button class="icon-btn" id="settingsBtn" onclick="togglePanel('settings')" title="Sound settings">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-      <button class="icon-btn" id="progressBtn" onclick="togglePanel('progress')" title="Progress">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-        <span class="badge" id="progressBadge" style="display:none;"></span>
-      </button>
-    </div>
-  </header>
+  <!-- HEADER BAR REMOVED — back button + title moved into body -->
 
   <!-- SETTINGS PANEL -->
   <div class="panel-overlay" id="settingsOverlay" onclick="closeAllPanels()"></div>
@@ -434,28 +425,46 @@
 
   <!-- MAIN CONTENT -->
   <main class="main">
+    <!-- Back button -->
+    <div class="back-btn-row">
+      <button class="back-btn" onclick="goBack()" title="Back to Kyler Kingdom">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Back
+      </button>
+    </div>
+
     <div class="word-area">
-      <div class="word-label">Generated Word</div>
+      <div class="app-title">Pattern Phonics</div>
+
       <div class="word-display syl-1" id="wordDisplay">
         <span class="word-empty">Tap Generate to start</span>
       </div>
 
       <div class="toggles-row">
+        <span style="font-size:var(--text-sm);color:var(--color-text-muted);">syllables</span>
         <div class="pills" id="syllablePills">
           <button class="pill active" data-syl="1" onclick="setSyllableCount(1)">1</button>
           <button class="pill" data-syl="2" onclick="setSyllableCount(2)">2</button>
           <button class="pill" data-syl="3" onclick="setSyllableCount(3)">3</button>
           <button class="pill" data-syl="4" onclick="setSyllableCount(4)">4</button>
         </div>
-        <span style="font-size:var(--text-sm);color:var(--color-text-muted);">syllables</span>
 
         <div class="toggle-item" onclick="toggleSegmentation()">
-          <div class="toggle on" id="segmentToggle"></div>
+          <div class="toggle" id="segmentToggle"></div>
           <span>Segments</span>
         </div>
         <div class="toggle-item" onclick="toggleSyllableSep()">
-          <div class="toggle on" id="sylSepToggle"></div>
+          <div class="toggle" id="sylSepToggle"></div>
           <span>Dividers</span>
+        </div>
+      </div>
+
+      <!-- Difficulty pills — moved below toggles -->
+      <div class="difficulty-row">
+        <div class="pills" id="difficultyPills">
+          <button class="pill active" data-level="easy" onclick="setDifficulty('easy')">Easy</button>
+          <button class="pill" data-level="medium" onclick="setDifficulty('medium')">Medium</button>
+          <button class="pill" data-level="hard" onclick="setDifficulty('hard')">Hard</button>
         </div>
       </div>
     </div>
@@ -467,13 +476,16 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
         </button>
       </div>
-      <div class="rating-section">
-        <div class="rating-label">How did it go?</div>
-        <div class="rating-buttons">
-          <button class="btn-rate green" onclick="rateWord('green')" disabled id="rateGreen"><span class="rate-icon">&#10004;</span>Easy</button>
-          <button class="btn-rate yellow" onclick="rateWord('yellow')" disabled id="rateYellow"><span class="rate-icon">&#9711;</span>OK</button>
-          <button class="btn-rate red" onclick="rateWord('red')" disabled id="rateRed"><span class="rate-icon">&#10008;</span>Hard</button>
-        </div>
+
+      <!-- Settings & Progress buttons — moved below generate -->
+      <div class="utility-buttons">
+        <button class="icon-btn" id="settingsBtn" onclick="togglePanel('settings')" title="Sound settings">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="icon-btn" id="progressBtn" onclick="togglePanel('progress')" title="Progress">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <span class="badge" id="progressBadge" style="display:none;"></span>
+        </button>
       </div>
     </div>
   </main>
@@ -504,8 +516,8 @@
     let state = {
       difficulty: 'easy',
       syllableCount: 1,
-      showSegments: true,
-      showSylSep: true,
+      showSegments: false,
+      showSylSep: false,
       adaptiveMode: false,
       currentWord: null,   // { syllables: [{ onset, vowel, coda }], full }
       activeOnsets: new Set(),
@@ -537,8 +549,8 @@
           const p = JSON.parse(saved);
           state.difficulty = p.difficulty || 'easy';
           state.syllableCount = p.syllableCount || 1;
-          state.showSegments = p.showSegments !== undefined ? p.showSegments : true;
-          state.showSylSep = p.showSylSep !== undefined ? p.showSylSep : true;
+          state.showSegments = p.showSegments !== undefined ? p.showSegments : false;
+          state.showSylSep = p.showSylSep !== undefined ? p.showSylSep : false;
           state.adaptiveMode = p.adaptiveMode || false;
           state.history = p.history || [];
           state.activeOnsets = new Set(p.activeOnsets || []);
@@ -798,13 +810,25 @@
     /* ============================================== TTS */
     function speakWord() {
       if (!state.currentWord) return;
-      const u = new SpeechSynthesisUtterance(state.currentWord.full);
-      u.rate = 0.8; u.pitch = 1.0; u.lang = 'en-GB';
-      const voices = speechSynthesis.getVoices();
-      const v = voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en'));
-      if (v) u.voice = v;
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
+      // Ensure voices are loaded (Chrome requires this)
+      const loadVoices = () => {
+        const u = new SpeechSynthesisUtterance(state.currentWord.full);
+        u.rate = 0.8; u.pitch = 1.0; u.lang = 'en-GB';
+        const voices = speechSynthesis.getVoices();
+        const v = voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en'));
+        if (v) u.voice = v;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+      // Chrome sometimes needs a small delay for voices to load
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+        // Trigger voice loading
+        speechSynthesis.getVoices();
+        setTimeout(loadVoices, 100);
+      } else {
+        loadVoices();
+      }
     }
     if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = () => {};
 
@@ -818,18 +842,13 @@
         rating, timestamp: Date.now()
       };
       state.history.unshift(entry);
-      const btn = document.getElementById('rate' + rating.charAt(0).toUpperCase() + rating.slice(1));
-      btn.classList.add('rating-pulse');
-      setTimeout(() => btn.classList.remove('rating-pulse'), 300);
       renderProgressPanel(); saveState();
       document.getElementById('progressBadge').style.display = 'block';
       setTimeout(() => generateWord(), 600);
     }
 
     function enableRatingButtons(enabled) {
-      document.getElementById('rateGreen').disabled = !enabled;
-      document.getElementById('rateYellow').disabled = !enabled;
-      document.getElementById('rateRed').disabled = !enabled;
+      // Rating buttons removed from UI — kept for progress panel history tracking
     }
 
     /* ============================================== SETTINGS PANEL */
@@ -963,7 +982,18 @@
     });
 
     /* ============================================== GO */
-    init();
+    // Send back navigation to parent
+    function goBack() {
+      window.parent.postMessage('pattern-phonics:back', '*');
+    }
+
+    // Ensure init runs regardless of DOM ready state (iframe timing)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      // DOM is already ready (common in iframe context)
+      init();
+    }
   </script>
 </body>
 </html>
