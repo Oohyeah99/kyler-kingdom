@@ -260,6 +260,12 @@
     .word-segment.coda-seg { color: var(--color-coda); }
     .word-segment.blended { color: var(--color-text); }
 
+    /* Syllable hyphen in custom-decoded blended mode */
+    .syl-hyphen {
+      color: var(--color-primary); font-weight: 700;
+      margin: 0 4px; font-size: 0.85em;
+    }
+
     .word-segment.locked { position: relative; }
     .word-segment.locked::after {
       content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; border-radius: 2px;
@@ -785,6 +791,7 @@
       let html = '';
 
       if (state.showSegments) {
+        // Segment mode: show phonics-based syllables with separators between them
         syls.forEach((s, si) => {
           if (si > 0) html += `<div class="syl-separator ${state.showSylSep ? 'visible' : ''}"></div>`;
           html += '<div class="syllable-group">';
@@ -794,12 +801,23 @@
           html += '</div>';
         });
       } else {
-        const blendedParts = [];
-        syls.forEach((s, si) => {
-          if (si > 0 && state.showSylSep) blendedParts.push(`<span style="color:var(--color-border);font-weight:300;margin:0 2px;">|</span>`);
-          blendedParts.push(s.onset + s.vowel + s.coda);
-        });
-        html += `<div class="segment-col"><span class="word-segment blended">${blendedParts.join('')}</span>`;
+        // Blended mode: show full word, optionally with custom-decoded syllable splits
+        if (state.showSylSep) {
+          // Use custom VCV/VCCV splitting algorithm
+          const fullWord = state.currentWord.full;
+          const splitResult = splitWord(fullWord);
+          const parts = splitResult.split('-');
+
+          let blendedHtml = '';
+          parts.forEach((part, pi) => {
+            if (pi > 0) blendedHtml += `<span class="syl-hyphen">-</span>`;
+            blendedHtml += `<span class="word-segment blended">${part}</span>`;
+          });
+          html += `<div class="segment-col"><span class="word-segment blended">${blendedHtml}</span>`;
+        } else {
+          // No dividers: just show the full word
+          html += `<div class="segment-col"><span class="word-segment blended">${state.currentWord.full}</span>`;
+        }
         html += '<div class="seg-controls-row">';
         syls.forEach((s, si) => {
           if (si > 0) html += '<div style="width:1px;height:24px;background:var(--color-border);margin:0 4px;border-radius:1px;"></div>';
