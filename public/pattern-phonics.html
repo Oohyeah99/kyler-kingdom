@@ -1155,39 +1155,56 @@
   <div class="info-modal-overlay" id="syllableInfoModal" onclick="hideSyllableInfo()">
     <div class="info-modal" onclick="event.stopPropagation()">
       <button class="info-modal-close" onclick="hideSyllableInfo()">&times;</button>
-      <h2>How Syllable Splitting Works</h2>
-      <p>When <strong>Dividers</strong> is turned on, the app splits words into syllables using simple rules designed to help young readers decode words more easily. These rules aren't strictly linguistic — they're optimized for how children learn to read.</p>
+      <h2>Why We Split Words This Way</h2>
+      <p>This system is designed to help young children (ages 5–8) <strong>read new words quickly and confidently</strong>.</p>
+      <p>Instead of following complex dictionary rules, we use a <strong>simple, consistent method</strong> that helps children break words into manageable parts, recognize patterns faster, and build strong reading instincts.</p>
 
       <div class="rule">
-        <h3>Rule 1: VCV — Move the consonant forward</h3>
-        <p>When a single consonant sits between two vowels, it moves to the next syllable.</p>
-        <p class="example">ba-sic &nbsp; vi-sit &nbsp; o-pen</p>
+        <h3>Why Not Use Traditional Syllable Rules?</h3>
+        <p>Traditional rules are based on linguistics and word history — not how children learn. They're often inconsistent and confusing for beginners.</p>
+        <p style="margin-top:8px;">For example: "visit" → <em>vis-it</em> (dictionary) but a child naturally sees → <em>vi-sit</em></p>
+        <p style="margin-top:8px;">This mismatch creates <strong>unnecessary confusion</strong>.</p>
       </div>
 
       <div class="rule">
-        <h3>Rule 2: VCCV — Split between two consonants</h3>
-        <p>When two consonants are between vowels, split between them.</p>
-        <p class="example">hap-py &nbsp; bas-ket &nbsp; let-ter</p>
+        <h3>Our Approach: A Decoding Strategy</h3>
+        <p>We teach children a <strong>decoding strategy</strong>, not a dictionary system. We prioritize <strong>simplicity, consistency, and speed of learning</strong>.</p>
+        <p style="margin-top:8px;">Even if the split is not "official," it helps children <strong>read correctly</strong>, which is the real goal.</p>
       </div>
 
       <div class="rule">
-        <h3>Rule 3: Keep clusters together</h3>
-        <p>Common consonant blends (bl, cl, tr, st, etc.) stay together and move to the next syllable.</p>
-        <p class="example">ta-ble &nbsp; a-pron &nbsp; ma-pic</p>
+        <h3>The Core Idea</h3>
+        <p><strong>Each syllable should start with a consonant whenever possible.</strong></p>
+        <p style="margin-top:8px;">This makes words easier to chunk, pronounce, and remember.</p>
       </div>
 
       <div class="rule">
-        <h3>Rule 4: Handle "x" specially</h3>
-        <p>Since "x" sounds like "k" + "s", split before the "x".</p>
-        <p class="example">ex-it &nbsp; ax-on</p>
+        <h3>Rule 1: One Consonant → Move It Forward</h3>
+        <p class="example">basic → ba-sic &nbsp; visit → vi-sit &nbsp; lemon → le-mon</p>
       </div>
 
       <div class="rule">
-        <h3>Rule 5: Keep it simple</h3>
-        <p>When multiple splits are possible, choose the one that makes the easiest syllables for young readers.</p>
+        <h3>Rule 2: Two Consonants → Split Them</h3>
+        <p class="example">happy → hap-py &nbsp; basket → bas-ket</p>
       </div>
 
-      <p style="margin-top: var(--space-md); font-size: var(--text-xs); opacity: 0.7;">Tip: Turn on <strong>Dividers</strong> and generate a word to see these rules in action!</p>
+      <div class="rule">
+        <h3>Rule 3: Keep Blends Together</h3>
+        <p class="example">table → ta-ble &nbsp; apron → a-pron</p>
+      </div>
+
+      <div class="rule">
+        <h3>Rule 4: "x" Splits Before</h3>
+        <p class="example">exit → ex-it &nbsp; exam → ex-am</p>
+      </div>
+
+      <div class="rule">
+        <h3>Important: Sound Comes After Splitting</h3>
+        <p>Splitting does NOT decide pronunciation. Children are taught to <strong>"look ahead and choose the correct vowel sound."</strong></p>
+        <p style="margin-top:8px;">Examples: <em>vi-sit</em> → "vis-it" &nbsp;|&nbsp; <em>ba-sic</em> → "bay-sic"</p>
+      </div>
+
+      <p style="margin-top: var(--space-md); font-size: var(--text-xs); opacity: 0.7; text-align: center; font-style: italic;">"We are not teaching children to analyze English. We are teaching them to read it."</p>
     </div>
   </div>
 </body>
