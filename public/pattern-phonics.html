@@ -260,10 +260,10 @@
     .word-segment.coda-seg { color: var(--color-coda); }
     .word-segment.blended { color: var(--color-text); }
 
-    /* Syllable hyphen in custom-decoded blended mode */
-    .syl-hyphen {
-      color: var(--color-primary); font-weight: 700;
-      margin: 0 4px; font-size: 0.85em;
+    /* Syllable separator in custom-decoded blended mode */
+    .syl-sep {
+      color: var(--color-border); font-weight: 300;
+      margin: 0 2px; font-size: 0.9em;
     }
 
     .word-segment.locked { position: relative; }
@@ -867,7 +867,7 @@
 
           let blendedHtml = '';
           parts.forEach((part, pi) => {
-            if (pi > 0) blendedHtml += `<span class="syl-hyphen">-</span>`;
+            if (pi > 0) blendedHtml += `<span class="syl-sep">|</span>`;
             blendedHtml += `<span class="word-segment blended">${part}</span>`;
           });
           html += `<div class="segment-col"><span class="word-segment blended">${blendedHtml}</span>`;
