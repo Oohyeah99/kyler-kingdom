@@ -1,5 +1,5 @@
 // @ts-nocheck
-const DEEPSEEK_API_KEY = 'sk-a67cd9cfc09d480f897265d5dbe8c146';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 export default async function handler(req, res) {

@@ -147,7 +147,7 @@ The flow is:
 ### API Route
 - File: `api/generate-text.ts` - Vercel serverless function
 - Proxies to DeepSeek API (`https://api.deepseek.com/v1/chat/completions`)
-- Key: `sk-a67cd9cfc09d480f897265d5dbe8c146`
+- Key: stored in `.env` as `DEEPSEEK_API_KEY`
 
 ### What's Been Tried
 
