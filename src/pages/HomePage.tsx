@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Crown, Sparkles, BookOpen, Music, LetterText, MessageCircle } from 'lucide-react'
+import { Crown, Sparkles, LetterText, MessageCircle } from 'lucide-react'
 
 const tools = [
   {
@@ -8,7 +8,6 @@ const tools = [
     description: 'Look at a picture and tell a story!',
     icon: Sparkles,
     color: 'purple',
-    available: true,
     path: '/picture-story',
   },
   {
@@ -17,7 +16,6 @@ const tools = [
     description: 'Sound it out!',
     icon: LetterText,
     color: 'gold',
-    available: true,
     path: '/pattern-phonics',
   },
   {
@@ -26,26 +24,7 @@ const tools = [
     description: 'Practice answering competition questions!',
     icon: MessageCircle,
     color: 'green',
-    available: true,
     path: '/qa-practice',
-  },
-  {
-    id: 'reading',
-    name: 'Story Time',
-    description: 'Read stories together!',
-    icon: BookOpen,
-    color: 'green',
-    available: false,
-    path: '#',
-  },
-  {
-    id: 'music',
-    name: 'Music Fun',
-    description: 'Listen and play along!',
-    icon: Music,
-    color: 'sky',
-    available: false,
-    path: '#',
   },
 ]
 
@@ -82,36 +61,18 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {tools.map((tool) => {
             const Icon = tool.icon
-            if (tool.available) {
-              return (
-                <Link key={tool.id} to={tool.path} className="card-kingdom block">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-14 h-14 rounded-xl ${colorMap[tool.color]}/15 flex items-center justify-center flex-shrink-0`}>
-                      <Icon className={`w-7 h-7 ${iconColorMap[tool.color]}`} />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">{tool.name}</h2>
-                      <p className="text-foreground/60 text-lg">{tool.description}</p>
-                    </div>
-                  </div>
-                </Link>
-              )
-            }
             return (
-              <div key={tool.id} className="card-kingdom-coming-soon">
+              <Link key={tool.id} to={tool.path} className="card-kingdom block">
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gray-300/30 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-7 h-7 text-gray-400" />
+                  <div className={`w-14 h-14 rounded-xl ${colorMap[tool.color]}/15 flex items-center justify-center flex-shrink-0`}>
+                    <Icon className={`w-7 h-7 ${iconColorMap[tool.color]}`} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold mb-1 text-gray-400">{tool.name}</h2>
-                    <p className="text-gray-400 text-lg">{tool.description}</p>
-                    <span className="inline-block mt-2 text-sm font-semibold text-kingdom-gold">
-                      Coming Soon!
-                    </span>
+                    <h2 className="text-2xl font-bold mb-1">{tool.name}</h2>
+                    <p className="text-foreground/60 text-lg">{tool.description}</p>
                   </div>
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>
