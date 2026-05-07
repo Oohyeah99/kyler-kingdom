@@ -2,7 +2,8 @@
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const OPENAI_URL = 'https://api.openai.com/v1/images/generations';
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages';
+const GEMINI_MODEL = 'imagen-4.0-fast-generate-001';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:predict`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -42,32 +43,35 @@ export default async function handler(req, res) {
       const imageUrl = data.data?.[0]?.url;
       return res.status(200).json({ imageUrl, provider: 'openai' });
     } else if (provider === 'gemini' && GEMINI_API_KEY) {
-      // Google Gemini Imagen
-      const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      // Google Gemini Imagen (matching AI Playground working implementation)
+      const response = await fetch(GEMINI_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': GEMINI_API_KEY,
+        },
         body: JSON.stringify({
-          prompt: prompt + ', cartoon style, colorful, kid-friendly, high quality illustration',
-          config: {
-            numberOfImages: 1,
+          instances: [{ prompt: prompt + ', cartoon style, colorful, kid-friendly, high quality illustration' }],
+          parameters: {
+            sampleCount: 1,
             aspectRatio: '1:1',
+            personGeneration: 'allow_adult',
           },
         }),
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        return res.status(response.status).json({ error, provider: 'gemini' });
+        const errText = await response.text();
+        return res.status(response.status).json({ error: `Imagen ${response.status}: ${errText}`, provider: 'gemini' });
       }
 
       const data = await response.json();
-      const imageUrl = data.images?.[0]?.imageBase64
-        ? `data:image/png;base64,${data.images[0].imageBase64}`
-        : null;
-      
-      if (!imageUrl) {
-        return res.status(500).json({ error: 'No image returned from Gemini', provider: 'gemini' });
+      const predictions = data.predictions || [];
+      if (!predictions.length) {
+        return res.status(500).json({ error: 'No images in Gemini response', provider: 'gemini' });
       }
+
+      const imageUrl = `data:image/png;base64,${predictions[0].bytesBase64Encoded}`;
       return res.status(200).json({ imageUrl, provider: 'gemini' });
     } else {
       // Pollinations.ai (default, free, no API key needed)
