@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Crown, Sparkles, BookOpen, Music, LetterText } from 'lucide-react'
+import { Crown, Sparkles, BookOpen, Music, LetterText, MessageCircle } from 'lucide-react'
 
 const tools = [
   {
@@ -19,6 +19,15 @@ const tools = [
     color: 'gold',
     available: true,
     path: '/pattern-phonics',
+  },
+  {
+    id: 'qa-practice',
+    name: 'Q&A Practice',
+    description: 'Practice answering competition questions!',
+    icon: MessageCircle,
+    color: 'green',
+    available: true,
+    path: '/qa-practice',
   },
   {
     id: 'reading',
