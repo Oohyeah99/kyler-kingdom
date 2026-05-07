@@ -48,6 +48,13 @@ export default function PictureStoryPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('pollinations')
 
+  // Manual generation mode state
+  const [showManualModal, setShowManualModal] = useState(false)
+  const [manualPrompt, setManualPrompt] = useState('')
+  const [manualProvider, setManualProvider] = useState<'pollinations' | 'openai' | 'gemini'>('pollinations')
+  const [promptGenerating, setPromptGenerating] = useState(false)
+  const [imageCreating, setImageCreating] = useState(false)
+
   useEffect(() => {
     setGallery(loadGallery())
   }, [])
@@ -115,6 +122,56 @@ export default function PictureStoryPage() {
   const handleDelete = (id: string) => {
     removeFromGallery(id)
     setGallery(loadGallery())
+  }
+
+  // Manual mode: generate a prompt
+  const handleGenerateManualPrompt = async () => {
+    setPromptGenerating(true)
+    try {
+      const prompt = await generatePicturePrompt()
+      setManualPrompt(prompt)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate prompt')
+    } finally {
+      setPromptGenerating(false)
+    }
+  }
+
+  // Manual mode: create image from current prompt
+  const handleCreateManualImage = async () => {
+    if (!manualPrompt.trim()) return
+    setImageCreating(true)
+    setError(null)
+    setStoryHints(null)
+    setShowPrompt(false)
+    setReviewPicture(null)
+    try {
+      setImageDescription(manualPrompt)
+      const result = await generateImage(manualPrompt, manualProvider)
+      setImageData(result.imageUrl)
+      setImageProvider(result.provider)
+      const pic: SavedPicture = {
+        id: Date.now().toString(),
+        imageUrl: result.imageUrl,
+        prompt: manualPrompt,
+        provider: result.provider,
+        timestamp: Date.now(),
+      }
+      saveToGallery(pic)
+      setGallery(loadGallery())
+      setShowManualModal(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create image')
+    } finally {
+      setImageCreating(false)
+    }
+  }
+
+  // Open manual modal
+  const handleOpenManual = () => {
+    setManualPrompt('')
+    setManualProvider(selectedProvider)
+    setShowManualModal(true)
   }
 
   return (
@@ -200,9 +257,17 @@ export default function PictureStoryPage() {
             ) : (
               <>
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate Picture
+                Generate (auto)
               </>
             )}
+          </button>
+
+          <button
+            onClick={handleOpenManual}
+            className="btn-kingdom !bg-kingdom-purple/80 !text-white hover:!bg-kingdom-purple"
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
+            Generate (manual)
           </button>
 
           {imageData && (
@@ -391,6 +456,122 @@ export default function PictureStoryPage() {
               <p className="text-xs text-foreground/40">
                 Each generated image will show which provider was used. Your selection is saved for next time.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual generation modal */}
+      {showManualModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4" onClick={() => setShowManualModal(false)}>
+          <div className="bg-background rounded-2xl w-full max-w-lg p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Manual Image Generation</h2>
+              <button onClick={() => setShowManualModal(false)} className="p-2 rounded-lg hover:bg-foreground/5">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Generate Prompt button */}
+            <button
+              onClick={handleGenerateManualPrompt}
+              disabled={promptGenerating}
+              className="w-full btn-kingdom !bg-kingdom-purple/80 !text-white hover:!bg-kingdom-purple mb-4 disabled:opacity-50"
+            >
+              {promptGenerating ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Generating prompt...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Generate Prompt
+                </>
+              )}
+            </button>
+
+            {/* Prompt textarea */}
+            {manualPrompt && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold mb-2">Edit Prompt:</label>
+                <textarea
+                  value={manualPrompt}
+                  onChange={(e) => setManualPrompt(e.target.value)}
+                  className="w-full h-32 p-3 rounded-xl border-2 border-border bg-card text-foreground resize-none focus:border-kingdom-purple focus:outline-none"
+                  placeholder="Edit the generated prompt or type your own..."
+                />
+              </div>
+            )}
+
+            {/* Provider selection */}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-2">Image Provider:</label>
+              <div className="space-y-2">
+                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                  <input
+                    type="radio"
+                    name="manualProvider"
+                    value="pollinations"
+                    checked={manualProvider === 'pollinations'}
+                    onChange={(e) => setManualProvider(e.target.value as any)}
+                  />
+                  <div className="font-semibold">Pollinations.ai</div>
+                </label>
+
+                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'openai' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                  <input
+                    type="radio"
+                    name="manualProvider"
+                    value="openai"
+                    checked={manualProvider === 'openai'}
+                    onChange={(e) => setManualProvider(e.target.value as any)}
+                  />
+                  <div className="font-semibold">OpenAI DALL-E 3</div>
+                </label>
+
+                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                  <input
+                    type="radio"
+                    name="manualProvider"
+                    value="gemini"
+                    checked={manualProvider === 'gemini'}
+                    onChange={(e) => setManualProvider(e.target.value as any)}
+                    disabled
+                  />
+                  <div>
+                    <div className="font-semibold">Google Gemini Imagen</div>
+                    <div className="text-xs text-foreground/50">Coming soon</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleCreateManualImage}
+                disabled={!manualPrompt.trim() || imageCreating}
+                className="flex-1 btn-kingdom btn-kingdom-primary disabled:opacity-50"
+              >
+                {imageCreating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Creating image...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Create Image
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowManualModal(false)}
+                className="btn-kingdom !bg-foreground/10 !text-foreground hover:!bg-foreground/20"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
