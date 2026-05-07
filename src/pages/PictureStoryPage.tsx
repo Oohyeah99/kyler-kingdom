@@ -46,12 +46,12 @@ export default function PictureStoryPage() {
   const [gallery, setGallery] = useState<SavedPicture[]>([])
   const [reviewPicture, setReviewPicture] = useState<SavedPicture | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('pollinations')
+  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('gemini')
 
   // Manual generation mode state
   const [showManualModal, setShowManualModal] = useState(false)
   const [manualPrompt, setManualPrompt] = useState('')
-  const [manualProvider, setManualProvider] = useState<'pollinations' | 'openai' | 'gemini'>('pollinations')
+  const [manualProvider, setManualProvider] = useState<'pollinations' | 'openai' | 'gemini'>('gemini')
   const [promptGenerating, setPromptGenerating] = useState(false)
   const [imageCreating, setImageCreating] = useState(false)
 
@@ -167,11 +167,20 @@ export default function PictureStoryPage() {
     }
   }
 
-  // Open manual modal
-  const handleOpenManual = () => {
+  // Open manual modal - auto-generate prompt
+  const handleOpenManual = async () => {
     setManualPrompt('')
     setManualProvider(selectedProvider)
     setShowManualModal(true)
+    setPromptGenerating(true)
+    try {
+      const prompt = await generatePicturePrompt()
+      setManualPrompt(prompt)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate prompt')
+    } finally {
+      setPromptGenerating(false)
+    }
   }
 
   return (
@@ -405,18 +414,18 @@ export default function PictureStoryPage() {
             </p>
 
             <div className="space-y-3">
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                 <input
                   type="radio"
                   name="provider"
-                  value="pollinations"
-                  checked={selectedProvider === 'pollinations'}
+                  value="gemini"
+                  checked={selectedProvider === 'gemini'}
                   onChange={(e) => setSelectedProvider(e.target.value as any)}
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-semibold">Pollinations.ai</div>
-                  <div className="text-xs text-foreground/50">Free, no API key needed. Good quality, fast.</div>
+                  <div className="font-semibold">Google Gemini Imagen</div>
+                  <div className="text-xs text-foreground/50">High quality, detailed images.</div>
                 </div>
               </label>
 
@@ -435,19 +444,18 @@ export default function PictureStoryPage() {
                 </div>
               </label>
 
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                 <input
                   type="radio"
                   name="provider"
-                  value="gemini"
-                  checked={selectedProvider === 'gemini'}
+                  value="pollinations"
+                  checked={selectedProvider === 'pollinations'}
                   onChange={(e) => setSelectedProvider(e.target.value as any)}
                   className="mt-1"
-                  disabled
                 />
                 <div>
-                  <div className="font-semibold">Google Gemini Imagen</div>
-                  <div className="text-xs text-foreground/50">Coming soon - needs API setup.</div>
+                  <div className="font-semibold">Pollinations.ai</div>
+                  <div className="text-xs text-foreground/50">Free, no API key needed. Good quality, fast.</div>
                 </div>
               </label>
             </div>
@@ -508,15 +516,15 @@ export default function PictureStoryPage() {
             <div className="mb-4">
               <label className="block text-sm font-semibold mb-2">Image Provider:</label>
               <div className="space-y-2">
-                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                   <input
                     type="radio"
                     name="manualProvider"
-                    value="pollinations"
-                    checked={manualProvider === 'pollinations'}
+                    value="gemini"
+                    checked={manualProvider === 'gemini'}
                     onChange={(e) => setManualProvider(e.target.value as any)}
                   />
-                  <div className="font-semibold">Pollinations.ai</div>
+                  <div className="font-semibold">Google Gemini Imagen</div>
                 </label>
 
                 <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'openai' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
@@ -530,19 +538,15 @@ export default function PictureStoryPage() {
                   <div className="font-semibold">OpenAI DALL-E 3</div>
                 </label>
 
-                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                   <input
                     type="radio"
                     name="manualProvider"
-                    value="gemini"
-                    checked={manualProvider === 'gemini'}
+                    value="pollinations"
+                    checked={manualProvider === 'pollinations'}
                     onChange={(e) => setManualProvider(e.target.value as any)}
-                    disabled
                   />
-                  <div>
-                    <div className="font-semibold">Google Gemini Imagen</div>
-                    <div className="text-xs text-foreground/50">Coming soon</div>
-                  </div>
+                  <div className="font-semibold">Pollinations.ai</div>
                 </label>
               </div>
             </div>
