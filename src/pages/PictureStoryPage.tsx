@@ -24,8 +24,22 @@ function loadGallery(): SavedPicture[] {
 function saveToGallery(pic: SavedPicture) {
   const gallery = loadGallery()
   gallery.unshift(pic)
-  // Keep max 50 pictures
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(gallery.slice(0, 50)))
+  let toSave = gallery.slice(0, 20) // Reduced from 50 to 20 to stay under quota
+
+  // Try to save, removing oldest entries if quota exceeded
+  while (toSave.length > 0) {
+    try {
+      const serialized = JSON.stringify(toSave)
+      localStorage.setItem(STORAGE_KEY, serialized)
+      return // Success
+    } catch (e) {
+      // Quota exceeded — remove oldest and retry
+      toSave.pop()
+    }
+  }
+
+  // Even a single image is too large (e.g. huge base64). Skip saving silently.
+  // The image is still displayed on the main page.
 }
 
 function removeFromGallery(id: string) {

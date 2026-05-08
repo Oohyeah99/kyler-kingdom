@@ -95,6 +95,7 @@ export default function QAPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [newQuestionText, setNewQuestionText] = useState('')
   const [draggedId, setDraggedId] = useState<number | null>(null)
+  const [expandedQuestion, setExpandedQuestion] = useState<Question | null>(null)
 
   useEffect(() => {
     const loaded = loadData()
@@ -322,11 +323,15 @@ export default function QAPage() {
                   onDragStart={() => handleDragStart(q.id)}
                   onDragOver={(e) => handleDragOver(e, q.id)}
                   onDragEnd={handleDragEnd}
-                  className={`bg-card border-2 ${draggedId === q.id ? 'border-kingdom-purple opacity-60' : 'border-border hover:border-kingdom-purple/30'} rounded-xl p-4 transition-colors cursor-move`}
+                  onClick={() => setExpandedQuestion(q)}
+                  className={`bg-card border-2 ${draggedId === q.id ? 'border-kingdom-purple opacity-60' : 'border-border hover:border-kingdom-purple/30'} rounded-xl p-4 transition-colors cursor-pointer`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 flex-1 min-w-0">
-                      <GripVertical className="w-4 h-4 text-foreground/30 flex-shrink-0 mt-1" />
+                      <GripVertical
+                        className="w-4 h-4 text-foreground/30 flex-shrink-0 mt-1 cursor-move"
+                        onClick={(e) => e.stopPropagation()}
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-foreground/40 font-semibold mb-1">
                           #{index + 1}
@@ -336,7 +341,7 @@ export default function QAPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1 flex-shrink-0">
+                    <div className="flex flex-col gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => toggleNote(q.id)}
                         className="p-1.5 rounded-lg hover:bg-kingdom-purple/10 transition-colors"
@@ -360,7 +365,7 @@ export default function QAPage() {
 
                   {/* Note section */}
                   {showNoteFor === q.id && (
-                    <div className="mt-3 pt-3 border-t border-border animate-slide-up">
+                    <div className="mt-3 pt-3 border-t border-border animate-slide-up" onClick={(e) => e.stopPropagation()}>
                       <label className="block text-sm font-semibold mb-2 text-kingdom-purple">
                         Your Notes / Answer Ideas:
                       </label>
@@ -382,6 +387,50 @@ export default function QAPage() {
           </div>
         )}
       </main>
+
+      {/* Expanded question overlay */}
+      {expandedQuestion && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4"
+          onClick={() => setExpandedQuestion(null)}
+        >
+          <div
+            className="bg-background rounded-2xl w-full max-w-2xl p-8 shadow-2xl animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <p className="text-sm text-foreground/50 mb-2 font-semibold">
+                  Question {questions.findIndex(q => q.id === expandedQuestion.id) + 1} of {questions.length}
+                </p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+                  {expandedQuestion.text}
+                </h2>
+              </div>
+              <button
+                onClick={() => setExpandedQuestion(null)}
+                className="p-2.5 rounded-xl hover:bg-foreground/5 transition-colors flex-shrink-0"
+                title="Close"
+              >
+                <X className="w-6 h-6 text-foreground/60" />
+              </button>
+            </div>
+
+            {/* Note section */}
+            <div className="mt-6 pt-6 border-t border-border">
+              <label className="block text-sm font-semibold mb-2 text-kingdom-purple">
+                Your Notes / Answer Ideas:
+              </label>
+              <textarea
+                value={notes[expandedQuestion.id] || ''}
+                onChange={(e) => updateNote(expandedQuestion.id, e.target.value)}
+                className="w-full h-32 p-4 rounded-xl border-2 border-kingdom-purple/20 bg-background text-foreground resize-none focus:border-kingdom-purple focus:outline-none text-lg"
+                placeholder="Write your answer ideas or notes here..."
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
