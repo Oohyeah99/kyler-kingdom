@@ -82,7 +82,11 @@ export default function PictureStoryPage() {
       saveToGallery(pic)
       setGallery(loadGallery())
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      const msg = err instanceof Error ? err.message : 'Something went wrong'
+      const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
+      setError(isTimeout
+        ? `${msg} — Gemini can be slow. Try switching to OpenAI DALL-E 3 or Pollinations.ai for faster results.`
+        : msg)
     } finally {
       setGenerating(false)
     }
@@ -161,7 +165,13 @@ export default function PictureStoryPage() {
       setGallery(loadGallery())
       setShowManualModal(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create image')
+      const msg = err instanceof Error ? err.message : 'Failed to create image'
+      // Show a friendly message if it looks like a timeout
+      const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
+      setError(isTimeout
+        ? `${msg} — Gemini can be slow. Try switching to OpenAI DALL-E 3 or Pollinations.ai for faster results.`
+        : msg)
+      setShowManualModal(false)
     } finally {
       setImageCreating(false)
     }
