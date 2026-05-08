@@ -124,6 +124,24 @@ Just give me the prompt, nothing else. Be creative - the examples above are just
   }
 ]
 
+const DIFFICULT_VARIATIONS = [
+  'head-and-shoulders portrait',
+  'single everyday object on a table',
+  'one person standing still',
+  'empty room with one small item',
+  'close-up of a face',
+  'single piece of furniture',
+  'one item on an empty shelf',
+  'plain wall with one tiny detail',
+  'single food item',
+  'one small toy or object',
+  'hands holding something simple',
+  'feet or shoes only',
+  'back of a person',
+  'single window or door',
+  'one plant or flower',
+]
+
 export async function generatePicturePrompt(categoryName?: string): Promise<string> {
   let category
   if (categoryName) {
@@ -134,11 +152,22 @@ export async function generatePicturePrompt(categoryName?: string): Promise<stri
     const eligible = PROMPT_CATEGORIES.filter(c => c.name !== 'difficult')
     category = eligible[Math.floor(Math.random() * eligible.length)]
   }
+
+  let userPrompt = category.user
+  let temperature = 1.0
+
+  // For difficult mode, add random variation and crank up temperature
+  if (category.name === 'difficult') {
+    const variation = DIFFICULT_VARIATIONS[Math.floor(Math.random() * DIFFICULT_VARIATIONS.length)]
+    userPrompt = `${userPrompt}\n\nIMPORTANT: This prompt must be COMPLETELY DIFFERENT from any previous prompt. Focus specifically on: ${variation}. Do NOT reuse any example from above. Be original and unexpected.`
+    temperature = 1.5
+  }
+
   const text = await generateText(
     category.system,
-    category.user,
+    userPrompt,
     100,
-    1.0
+    temperature
   )
   return text.trim() || category.fallback
 }

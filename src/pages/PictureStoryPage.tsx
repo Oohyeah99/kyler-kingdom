@@ -21,30 +21,82 @@ function loadGallery(): SavedPicture[] {
   } catch { return [] }
 }
 
+function isDataUrl(url: string): boolean {
+  return url?.startsWith('data:') ?? false
+}
+
+function stripBase64(pic: SavedPicture): SavedPicture {
+  return { ...pic, imageUrl: '' }
+}
+
 function saveToGallery(pic: SavedPicture) {
   const gallery = loadGallery()
   gallery.unshift(pic)
-  let toSave = gallery.slice(0, 20) // Reduced from 50 to 20 to stay under quota
+  let toSave = gallery.slice(0, 20)
 
-  // Try to save, removing oldest entries if quota exceeded
+  // Try 1: save full gallery
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+    return
+  } catch (e) {
+    // Quota exceeded — try stripping base64 from older images
+  }
+
+  // Try 2: keep newest 5 images with full data, strip base64 from older ones
+  toSave = gallery.slice(0, 20).map((p, idx) => {
+    if (idx < 5) return p // newest 5 keep full data
+    return isDataUrl(p.imageUrl) ? stripBase64(p) : p
+  })
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+    return
+  } catch (e) {
+    // Still too large — strip base64 from ALL except the brand new pic
+  }
+
+  // Try 3: keep only the new pic with full data, strip everything else
+  toSave = gallery.slice(0, 20).map((p, idx) => {
+    if (idx === 0) return p // brand new pic keeps full data
+    return isDataUrl(p.imageUrl) ? stripBase64(p) : p
+  })
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+    return
+  } catch (e) {
+    // Still too large — new pic itself might be huge base64
+  }
+
+  // Try 4: strip base64 from EVERYTHING, keep only metadata
+  toSave = gallery.slice(0, 20).map(p => isDataUrl(p.imageUrl) ? stripBase64(p) : p)
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+    return
+  } catch (e) {
+    // Desperate measures — remove oldest entries one by one
+  }
+
+  // Try 5: keep removing oldest until it fits
+  toSave = gallery.slice(0, 20).map(p => isDataUrl(p.imageUrl) ? stripBase64(p) : p)
   while (toSave.length > 0) {
     try {
-      const serialized = JSON.stringify(toSave)
-      localStorage.setItem(STORAGE_KEY, serialized)
-      return // Success
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+      return
     } catch (e) {
-      // Quota exceeded — remove oldest and retry
       toSave.pop()
     }
   }
 
-  // Even a single image is too large (e.g. huge base64). Skip saving silently.
-  // The image is still displayed on the main page.
+  // Nothing worked. At least we didn't wipe existing data.
+  console.error('Failed to save gallery: quota exceeded even with stripped data')
 }
 
 function removeFromGallery(id: string) {
   const gallery = loadGallery().filter(p => p.id !== id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(gallery))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gallery))
+  } catch (e) {
+    console.error('Failed to remove gallery item:', e)
+  }
 }
 
 export default function PictureStoryPage() {
@@ -161,12 +213,12 @@ export default function PictureStoryPage() {
   }
 
   const handleReview = (pic: SavedPicture) => {
-    setImageData(pic.imageUrl)
+    setImageData(pic.imageUrl || null)
     setImageDescription(pic.prompt)
     setStoryHints(pic.hints || null)
     setReviewPicture(pic)
     setShowGallery(false)
-    setShowPrompt(false)
+    setShowPrompt(!pic.imageUrl) // auto-show prompt if image was stripped
   }
 
   const handleDelete = (id: string) => {
@@ -296,13 +348,22 @@ export default function PictureStoryPage() {
                   <div key={pic.id} className="relative group">
                     <button
                       onClick={() => handleReview(pic)}
-                      className="w-full rounded-xl overflow-hidden border-2 border-border hover:border-kingdom-gold transition-colors"
+                      className="w-full rounded-xl overflow-hidden border-2 border-border hover:border-kingdom-gold transition-colors text-left"
                     >
-                      <img src={pic.imageUrl} alt={pic.prompt} className="w-full aspect-[4/3] object-cover" />
+                      {pic.imageUrl ? (
+                        <img src={pic.imageUrl} alt={pic.prompt} className="w-full aspect-[4/3] object-cover" />
+                      ) : (
+                        <div className="w-full aspect-[4/3] bg-kingdom-purple/10 flex items-center justify-center p-4">
+                          <p className="text-sm text-foreground/60 text-center line-clamp-3">
+                            {pic.prompt}
+                          </p>
+                        </div>
+                      )}
                       <div className="p-2 text-left">
                         <p className="text-xs text-foreground/50">
                           {new Date(pic.timestamp).toLocaleDateString()}
                           {pic.provider && <span className="ml-1 capitalize">({pic.provider})</span>}
+                          {!pic.imageUrl && <span className="ml-1 text-kingdom-purple">(regenerate to view)</span>}
                         </p>
                       </div>
                     </button>
