@@ -109,12 +109,31 @@ Style examples (don't copy these, just use them as inspiration): "Children paint
 
 Just give me the prompt, nothing else. Be creative - the examples above are just to show the style, not to limit your choices!`,
     fallback: 'Children painting colorful pictures in a sunny classroom'
+  },
+  {
+    name: 'difficult',
+    system: 'You create minimal, sparse image prompts that are intentionally challenging for children\'s English storytelling practice. The scene should have very little action, few objects, and minimal context — forcing the child to use imagination to create a story. Keep it to 1-2 sentences.',
+    user: `Give me ONE minimal, difficult image prompt for a 6-year-old boy practicing English storytelling. The scene should be sparse and hard to build a story from — very little happening, few objects, plain backgrounds, or isolated subjects.
+
+The scenes below are just EXAMPLES to show the style - you have FULL CREATIVE FREEDOM: head-and-shoulders portraits with plain backgrounds, single everyday objects on empty tables, one person standing still, empty rooms with one item, close-ups with no context, a face looking at the camera, one chair in a corner, a single toy on a shelf, etc.
+
+Style examples (don't copy these, just use them as inspiration): "A child's face looking directly at the camera against a plain gray wall", "A single red apple sitting on an empty wooden table", "One empty chair in the corner of a white room", "A person's head and shoulders with a small clock on the wall behind them", "A closed wooden door in a plain hallway with no decorations"
+
+Just give me the prompt, nothing else. Be creative - the examples above are just to show the style, not to limit your choices!`,
+    fallback: 'A child\'s face looking at the camera against a plain gray background'
   }
 ]
 
-export async function generatePicturePrompt(): Promise<string> {
-  // Randomly select a category for variety
-  const category = PROMPT_CATEGORIES[Math.floor(Math.random() * PROMPT_CATEGORIES.length)]
+export async function generatePicturePrompt(categoryName?: string): Promise<string> {
+  let category
+  if (categoryName) {
+    category = PROMPT_CATEGORIES.find(c => c.name === categoryName)
+  }
+  if (!category) {
+    // Randomly select a category for variety (excluding 'difficult' unless explicitly requested)
+    const eligible = PROMPT_CATEGORIES.filter(c => c.name !== 'difficult')
+    category = eligible[Math.floor(Math.random() * eligible.length)]
+  }
   const text = await generateText(
     category.system,
     category.user,

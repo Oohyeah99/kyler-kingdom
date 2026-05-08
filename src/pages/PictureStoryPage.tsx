@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Sparkles, Lightbulb, RefreshCw, Loader2, Eye, EyeOff, Images, X, Trash2, Settings } from 'lucide-react'
+import { ArrowLeft, Sparkles, Lightbulb, RefreshCw, Loader2, Eye, EyeOff, Images, X, Trash2, Settings, Zap } from 'lucide-react'
 import { generateImage, generateStoryHints, generatePicturePrompt } from '../services/gemini'
 
 interface SavedPicture {
@@ -106,6 +106,38 @@ export default function PictureStoryPage() {
     }
   }
 
+  const handleGenerateDifficultImage = async () => {
+    setGenerating(true)
+    setError(null)
+    setStoryHints(null)
+    setShowPrompt(false)
+    setReviewPicture(null)
+    try {
+      const prompt = await generatePicturePrompt('difficult')
+      setImageDescription(prompt)
+      const result = await generateImage(prompt, selectedProvider)
+      setImageData(result.imageUrl)
+      setImageProvider(result.provider)
+      const pic: SavedPicture = {
+        id: Date.now().toString(),
+        imageUrl: result.imageUrl,
+        prompt,
+        provider: result.provider,
+        timestamp: Date.now(),
+      }
+      saveToGallery(pic)
+      setGallery(loadGallery())
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong'
+      const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
+      setError(isTimeout
+        ? `${msg} — Gemini can be slow. Try switching to OpenAI DALL-E 3 or Pollinations.ai for faster results.`
+        : msg)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const handleGetHints = async () => {
     if (!imageDescription) return
     setHintLoading(true)
@@ -150,6 +182,19 @@ export default function PictureStoryPage() {
       setManualPrompt(prompt)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate prompt')
+    } finally {
+      setPromptGenerating(false)
+    }
+  }
+
+  // Manual mode: generate a difficult prompt
+  const handleGenerateDifficultManualPrompt = async () => {
+    setPromptGenerating(true)
+    try {
+      const prompt = await generatePicturePrompt('difficult')
+      setManualPrompt(prompt)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate difficult prompt')
     } finally {
       setPromptGenerating(false)
     }
@@ -301,6 +346,24 @@ export default function PictureStoryPage() {
           >
             <Sparkles className="w-5 h-5 mr-2" />
             Generate (manual)
+          </button>
+
+          <button
+            onClick={handleGenerateDifficultImage}
+            disabled={generating}
+            className="btn-kingdom !bg-kingdom-gold !text-kingdom-purple hover:!bg-kingdom-gold/90"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Creating Picture...
+              </>
+            ) : (
+              <>
+                <Zap className="w-5 h-5 mr-2" />
+                Generate (difficult)
+              </>
+            )}
           </button>
 
           {imageData && (
@@ -504,24 +567,43 @@ export default function PictureStoryPage() {
               </button>
             </div>
 
-            {/* Generate Prompt button */}
-            <button
-              onClick={handleGenerateManualPrompt}
-              disabled={promptGenerating}
-              className="w-full btn-kingdom !bg-kingdom-purple/80 !text-white hover:!bg-kingdom-purple mb-4 disabled:opacity-50"
-            >
-              {promptGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Generating prompt...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Generate Prompt
-                </>
-              )}
-            </button>
+            {/* Generate Prompt buttons */}
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={handleGenerateManualPrompt}
+                disabled={promptGenerating}
+                className="flex-1 btn-kingdom !bg-kingdom-purple/80 !text-white hover:!bg-kingdom-purple disabled:opacity-50"
+              >
+                {promptGenerating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Generate Prompt
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleGenerateDifficultManualPrompt}
+                disabled={promptGenerating}
+                className="flex-1 btn-kingdom !bg-kingdom-gold !text-kingdom-purple hover:!bg-kingdom-gold/90 disabled:opacity-50"
+              >
+                {promptGenerating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5 mr-2" />
+                    Difficult Prompt
+                  </>
+                )}
+              </button>
+            </div>
 
             {/* Prompt textarea */}
             {manualPrompt && (
