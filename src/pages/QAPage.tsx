@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Shuffle, List, FileText, EyeOff, Plus, X, GripVertical } from 'lucide-react'
+import { ArrowLeft, Shuffle, List, FileText, EyeOff, Plus, X, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react'
 
 interface Question {
   id: number
@@ -94,7 +94,7 @@ export default function QAPage() {
   const [showNoteFor, setShowNoteFor] = useState<number | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [newQuestionText, setNewQuestionText] = useState('')
-  const [draggedId, setDraggedId] = useState<number | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
   const [expandedQuestion, setExpandedQuestion] = useState<Question | null>(null)
   const [showExpandedNote, setShowExpandedNote] = useState(false)
 
@@ -149,7 +149,11 @@ export default function QAPage() {
     setShowAddForm(false)
   }
 
-  const handleDeleteQuestion = (id: number) => {
+  const handleDeleteRequest = (id: number) => {
+    setDeleteConfirmId(id)
+  }
+
+  const confirmDelete = (id: number) => {
     updateData(prev => {
       const newNotes = { ...prev.notes }
       delete newNotes[id]
@@ -159,29 +163,38 @@ export default function QAPage() {
       setCurrentQuestion(null)
     }
     if (showNoteFor === id) setShowNoteFor(null)
+    setDeleteConfirmId(null)
   }
 
-  // Drag and drop handlers
-  const handleDragStart = (id: number) => {
-    setDraggedId(id)
+  const cancelDelete = () => {
+    setDeleteConfirmId(null)
   }
 
-  const handleDragOver = (e: React.DragEvent, overId: number) => {
-    e.preventDefault()
-    if (draggedId === null || draggedId === overId) return
+  const moveQuestion = (id: number, direction: 'up' | 'down') => {
     updateData(prev => {
       const qs = [...prev.questions]
-      const fromIdx = qs.findIndex(q => q.id === draggedId)
-      const toIdx = qs.findIndex(q => q.id === overId)
-      if (fromIdx === -1 || toIdx === -1) return prev
-      const [moved] = qs.splice(fromIdx, 1)
-      qs.splice(toIdx, 0, moved)
+      const idx = qs.findIndex(q => q.id === id)
+      if (idx === -1) return prev
+      const newIdx = direction === 'up' ? idx - 1 : idx + 1
+      if (newIdx < 0 || newIdx >= qs.length) return prev
+      const [moved] = qs.splice(idx, 1)
+      qs.splice(newIdx, 0, moved)
       return { ...prev, questions: qs }
     })
   }
 
-  const handleDragEnd = () => {
-    setDraggedId(null)
+  const handleRestoreAll = () => {
+    if (!confirm('This will restore all default questions. Your custom questions and notes will be kept for questions that still exist. Continue?')) return
+    updateData(prev => {
+      // Start with defaults, then append any custom questions (ids > 54) that aren't in defaults
+      const defaultIds = new Set(DEFAULT_QUESTIONS.map(q => q.id))
+      const customQuestions = prev.questions.filter(q => !defaultIds.has(q.id))
+      const restored = [...DEFAULT_QUESTIONS, ...customQuestions]
+      return { ...prev, questions: restored }
+    })
+    setCurrentQuestion(null)
+    setShowNoteFor(null)
+    setDeleteConfirmId(null)
   }
 
   const questions = data.questions
@@ -277,14 +290,24 @@ export default function QAPage() {
         {/* All Questions View */}
         {view === 'all' && (
           <div className="animate-slide-up">
-            {/* Add Question button */}
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="btn-kingdom !bg-kingdom-green/80 !text-white hover:!bg-kingdom-green mb-6"
-            >
-              {showAddForm ? <X className="w-5 h-5 mr-2" /> : <Plus className="w-5 h-5 mr-2" />}
-              {showAddForm ? 'Cancel' : 'Add Question'}
-            </button>
+            {/* Add Question + Restore All buttons */}
+            <div className="flex flex-wrap gap-3 mb-6">
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="btn-kingdom !bg-kingdom-green/80 !text-white hover:!bg-kingdom-green"
+              >
+                {showAddForm ? <X className="w-5 h-5 mr-2" /> : <Plus className="w-5 h-5 mr-2" />}
+                {showAddForm ? 'Cancel' : 'Add Question'}
+              </button>
+              <button
+                onClick={handleRestoreAll}
+                className="btn-kingdom !bg-kingdom-gold/80 !text-kingdom-dark hover:!bg-kingdom-gold"
+                title="Restore all default questions"
+              >
+                <RotateCcw className="w-5 h-5 mr-2" />
+                Restore All
+              </button>
+            </div>
 
             {/* Add Question form */}
             {showAddForm && (
@@ -320,19 +343,30 @@ export default function QAPage() {
               {questions.map((q, index) => (
                 <div
                   key={q.id}
-                  draggable
-                  onDragStart={() => handleDragStart(q.id)}
-                  onDragOver={(e) => handleDragOver(e, q.id)}
-                  onDragEnd={handleDragEnd}
                   onClick={() => { setExpandedQuestion(q); setShowExpandedNote(false) }}
-                  className={`bg-card border-2 ${draggedId === q.id ? 'border-kingdom-purple opacity-60' : 'border-border hover:border-kingdom-purple/30'} rounded-xl p-4 transition-colors cursor-pointer`}
+                  className="bg-card border-2 border-border hover:border-kingdom-purple/30 rounded-xl p-4 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 flex-1 min-w-0">
-                      <GripVertical
-                        className="w-4 h-4 text-foreground/30 flex-shrink-0 mt-1 cursor-move"
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                      {/* Up/down reorder buttons */}
+                      <div className="flex flex-col gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => moveQuestion(q.id, 'up')}
+                          disabled={index === 0}
+                          className="p-0.5 rounded hover:bg-kingdom-purple/10 transition-colors disabled:opacity-20"
+                          title="Move up"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5 text-foreground/40" />
+                        </button>
+                        <button
+                          onClick={() => moveQuestion(q.id, 'down')}
+                          disabled={index === questions.length - 1}
+                          className="p-0.5 rounded hover:bg-kingdom-purple/10 transition-colors disabled:opacity-20"
+                          title="Move down"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5 text-foreground/40" />
+                        </button>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-foreground/40 font-semibold mb-1">
                           #{index + 1}
@@ -354,13 +388,30 @@ export default function QAPage() {
                           <FileText className="w-4 h-4 text-foreground/40" />
                         )}
                       </button>
-                      <button
-                        onClick={() => handleDeleteQuestion(q.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                        title="Delete question"
-                      >
-                        <X className="w-4 h-4 text-red-400" />
-                      </button>
+                      {deleteConfirmId === q.id ? (
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => confirmDelete(q.id)}
+                            className="px-2 py-1 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-colors"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={cancelDelete}
+                            className="px-2 py-1 rounded-lg bg-foreground/10 text-foreground text-xs font-bold hover:bg-foreground/20 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleDeleteRequest(q.id)}
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
+                          title="Delete question"
+                        >
+                          <X className="w-4 h-4 text-red-400" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
