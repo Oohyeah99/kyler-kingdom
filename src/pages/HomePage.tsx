@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Crown, Sparkles, LetterText, MessageCircle } from 'lucide-react'
+import { Crown, Sparkles, LetterText, MessageCircle, Heart } from 'lucide-react'
 
 const tools = [
   {
@@ -26,6 +26,14 @@ const tools = [
     color: 'green',
     path: '/qa-practice',
   },
+  {
+    id: 'heart-in-sync',
+    name: 'Heart-In-Sync',
+    description: 'Act out words and show you are in sync!',
+    icon: Heart,
+    color: 'red',
+    path: '/heart-in-sync',
+  },
 ]
 
 const colorMap: Record<string, string> = {
@@ -40,6 +48,7 @@ const iconColorMap: Record<string, string> = {
   gold: 'text-kingdom-gold',
   green: 'text-kingdom-green',
   sky: 'text-kingdom-sky',
+  red: 'text-kingdom-red',
 }
 
 export default function HomePage() {

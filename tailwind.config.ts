@@ -18,6 +18,7 @@ const config: Config = {
           gold: "hsl(var(--kingdom-gold))",
           green: "hsl(var(--kingdom-green))",
           sky: "hsl(var(--kingdom-sky))",
+          red: "hsl(var(--kingdom-red))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
