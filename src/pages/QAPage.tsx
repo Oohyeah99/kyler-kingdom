@@ -96,6 +96,7 @@ export default function QAPage() {
   const [newQuestionText, setNewQuestionText] = useState('')
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [expandedQuestion, setExpandedQuestion] = useState<Question | null>(null)
+  const [showExpandedNote, setShowExpandedNote] = useState(false)
 
   useEffect(() => {
     const loaded = loadData()
@@ -323,7 +324,7 @@ export default function QAPage() {
                   onDragStart={() => handleDragStart(q.id)}
                   onDragOver={(e) => handleDragOver(e, q.id)}
                   onDragEnd={handleDragEnd}
-                  onClick={() => setExpandedQuestion(q)}
+                  onClick={() => { setExpandedQuestion(q); setShowExpandedNote(false) }}
                   className={`bg-card border-2 ${draggedId === q.id ? 'border-kingdom-purple opacity-60' : 'border-border hover:border-kingdom-purple/30'} rounded-xl p-4 transition-colors cursor-pointer`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -416,18 +417,28 @@ export default function QAPage() {
               </button>
             </div>
 
-            {/* Note section */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <label className="block text-sm font-semibold mb-2 text-kingdom-purple">
-                Your Notes / Answer Ideas:
-              </label>
-              <textarea
-                value={notes[expandedQuestion.id] || ''}
-                onChange={(e) => updateNote(expandedQuestion.id, e.target.value)}
-                className="w-full h-32 p-4 rounded-xl border-2 border-kingdom-purple/20 bg-background text-foreground resize-none focus:border-kingdom-purple focus:outline-none text-lg"
-                placeholder="Write your answer ideas or notes here..."
-              />
+            {/* Notes toggle button */}
+            <div className="mt-6 pt-4 border-t border-border flex justify-center">
+              <button
+                onClick={() => setShowExpandedNote(prev => !prev)}
+                className="btn-kingdom !bg-kingdom-purple/10 !text-kingdom-purple hover:!bg-kingdom-purple/20"
+              >
+                {showExpandedNote ? <EyeOff className="w-5 h-5 mr-2" /> : <FileText className="w-5 h-5 mr-2" />}
+                {showExpandedNote ? 'Hide Notes' : 'Notes'}
+              </button>
             </div>
+
+            {/* Note section — only shown when toggled */}
+            {showExpandedNote && (
+              <div className="mt-4 animate-slide-up">
+                <textarea
+                  value={notes[expandedQuestion.id] || ''}
+                  onChange={(e) => updateNote(expandedQuestion.id, e.target.value)}
+                  className="w-full h-32 p-4 rounded-xl border-2 border-kingdom-purple/20 bg-background text-foreground resize-none focus:border-kingdom-purple focus:outline-none text-lg"
+                  placeholder="Write your answer ideas or notes here..."
+                />
+              </div>
+            )}
 
             {/* Next Question button */}
             <div className="mt-6 pt-4 border-t border-border">
@@ -436,6 +447,7 @@ export default function QAPage() {
                   const currentIdx = questions.findIndex(q => q.id === expandedQuestion.id)
                   const nextIdx = (currentIdx + 1) % questions.length
                   setExpandedQuestion(questions[nextIdx])
+                  setShowExpandedNote(false)
                 }}
                 className="btn-kingdom btn-kingdom-primary w-full"
               >
