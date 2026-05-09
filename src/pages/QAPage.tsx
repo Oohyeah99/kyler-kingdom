@@ -428,6 +428,21 @@ export default function QAPage() {
                 placeholder="Write your answer ideas or notes here..."
               />
             </div>
+
+            {/* Next Question button */}
+            <div className="mt-6 pt-4 border-t border-border">
+              <button
+                onClick={() => {
+                  const currentIdx = questions.findIndex(q => q.id === expandedQuestion.id)
+                  const nextIdx = (currentIdx + 1) % questions.length
+                  setExpandedQuestion(questions[nextIdx])
+                }}
+                className="btn-kingdom btn-kingdom-primary w-full"
+              >
+                <Shuffle className="w-5 h-5 mr-2" />
+                Next Question
+              </button>
+            </div>
           </div>
         </div>
       )}
