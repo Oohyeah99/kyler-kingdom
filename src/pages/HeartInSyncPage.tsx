@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Shuffle, List, Plus, X, GripVertical, Heart } from 'lucide-react'
 
@@ -9,6 +9,7 @@ interface WordItem {
 
 interface SyncData {
   words: WordItem[]
+  seenIds: number[]
 }
 
 const DEFAULT_WORDS: WordItem[] = [
@@ -69,9 +70,14 @@ const DATA_KEY = 'kyler_heart_sync_data'
 function loadData(): SyncData {
   try {
     const data = localStorage.getItem(DATA_KEY)
-    if (data) return JSON.parse(data)
+    if (data) {
+      const parsed = JSON.parse(data)
+      if (parsed.words) {
+        return { words: parsed.words, seenIds: parsed.seenIds || [] }
+      }
+    }
   } catch { /* ignore */ }
-  return { words: [...DEFAULT_WORDS] }
+  return { words: [...DEFAULT_WORDS], seenIds: [] }
 }
 
 function saveData(data: SyncData) {
@@ -83,7 +89,7 @@ function getNextId(words: WordItem[]): number {
 }
 
 export default function HeartInSyncPage() {
-  const [data, setData] = useState<SyncData>({ words: [] })
+  const [data, setData] = useState<SyncData>({ words: [], seenIds: [] })
   const [view, setView] = useState<'random' | 'all'>('random')
   const [currentWord, setCurrentWord] = useState<WordItem | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -93,10 +99,16 @@ export default function HeartInSyncPage() {
 
   useEffect(() => {
     const loaded = loadData()
-    setData(loaded)
+    let initial = loaded
     if (loaded.words.length > 0) {
-      setCurrentWord(loaded.words[Math.floor(Math.random() * loaded.words.length)])
+      const first = loaded.words[Math.floor(Math.random() * loaded.words.length)]
+      setCurrentWord(first)
+      if (!loaded.seenIds.includes(first.id)) {
+        initial = { ...loaded, seenIds: [...loaded.seenIds, first.id] }
+        saveData(initial)
+      }
     }
+    setData(initial)
   }, [])
 
   const updateData = (updater: (prev: SyncData) => SyncData) => {
@@ -107,19 +119,34 @@ export default function HeartInSyncPage() {
     })
   }
 
-  const getRandomWord = useCallback(() => {
-    const ws = data.words
-    if (ws.length === 0) return null
-    const idx = Math.floor(Math.random() * ws.length)
-    return ws[idx]
-  }, [data.words])
-
   const handleRandom = () => {
-    let next = getRandomWord()
-    while (next && currentWord && next.id === currentWord.id && data.words.length > 1) {
-      next = getRandomWord()
+    const ws = data.words
+    if (ws.length === 0) {
+      setCurrentWord(null)
+      return
     }
+
+    let pool = ws.filter(w => !data.seenIds.includes(w.id))
+
+    // If all words have been seen, reset but exclude current word so it doesn't repeat immediately
+    if (pool.length === 0) {
+      const resetIds = currentWord ? [currentWord.id] : []
+      pool = ws.filter(w => !resetIds.includes(w.id))
+      // Update seenIds to just the current word (or empty)
+      updateData(prev => ({ ...prev, seenIds: resetIds }))
+    }
+
+    // If pool is still empty (only 1 word total), just use that word
+    if (pool.length === 0) {
+      pool = ws
+    }
+
+    const next = pool[Math.floor(Math.random() * pool.length)]
     setCurrentWord(next)
+    updateData(prev => ({
+      ...prev,
+      seenIds: prev.seenIds.includes(next.id) ? prev.seenIds : [...prev.seenIds, next.id],
+    }))
   }
 
   const handleAddWord = () => {
@@ -137,6 +164,7 @@ export default function HeartInSyncPage() {
     updateData(prev => ({
       ...prev,
       words: prev.words.filter(w => w.id !== id),
+      seenIds: prev.seenIds.filter(sid => sid !== id),
     }))
     if (currentWord?.id === id) {
       setCurrentWord(null)
