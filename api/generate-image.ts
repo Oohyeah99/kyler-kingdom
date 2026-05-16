@@ -2,7 +2,7 @@
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const OPENAI_URL = 'https://api.openai.com/v1/images/generations';
-const GEMINI_MODEL = 'imagen-4.0-fast-generate-001';
+const GEMINI_MODEL = 'imagen-3.0-fast-generate-001';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:predict`;
 
 export default async function handler(req, res) {

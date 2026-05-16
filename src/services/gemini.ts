@@ -14,7 +14,7 @@ async function generateText(systemPrompt: string, userPrompt: string, maxTokens:
   return data.text || 'No response available.'
 }
 
-export async function generateImage(prompt: string, provider: 'pollinations' | 'openai' | 'gemini' = 'pollinations'): Promise<{ imageUrl: string; provider: string }> {
+export async function generateImage(prompt: string, provider: 'pollinations' | 'openai' | 'gemini' = 'openai'): Promise<{ imageUrl: string; provider: string }> {
   // Use serverless API endpoint to keep API keys secure (never exposed to client)
   const response = await fetch('/api/generate-image', {
     method: 'POST',

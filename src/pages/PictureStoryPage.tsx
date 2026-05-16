@@ -112,12 +112,12 @@ export default function PictureStoryPage() {
   const [gallery, setGallery] = useState<SavedPicture[]>([])
   const [reviewPicture, setReviewPicture] = useState<SavedPicture | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('gemini')
+  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('openai')
 
   // Manual generation mode state
   const [showManualModal, setShowManualModal] = useState(false)
   const [manualPrompt, setManualPrompt] = useState('')
-  const [manualProvider, setManualProvider] = useState<'pollinations' | 'openai' | 'gemini'>('gemini')
+  const [manualProvider, setManualProvider] = useState<'pollinations' | 'openai' | 'gemini'>('openai')
   const [promptGenerating, setPromptGenerating] = useState(false)
   const [imageCreating, setImageCreating] = useState(false)
 
