@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Sparkles, Lightbulb, RefreshCw, Loader2, Eye, EyeOff, Images, X, Trash2, Settings, Zap } from 'lucide-react'
 import { generateImage, generateStoryHints, generatePicturePrompt } from '../services/gemini'
 
+type ImageProvider = 'openai' | 'gemini'
+
 interface SavedPicture {
   id: string
   imageUrl: string
@@ -34,48 +36,35 @@ function saveToGallery(pic: SavedPicture) {
   gallery.unshift(pic)
   let toSave = gallery.slice(0, 20)
 
-  // Try 1: save full gallery
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
     return
-  } catch (e) {
-    // Quota exceeded — try stripping base64 from older images
-  }
+  } catch (e) {}
 
-  // Try 2: keep newest 5 images with full data, strip base64 from older ones
   toSave = gallery.slice(0, 20).map((p, idx) => {
-    if (idx < 5) return p // newest 5 keep full data
+    if (idx < 5) return p
     return isDataUrl(p.imageUrl) ? stripBase64(p) : p
   })
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
     return
-  } catch (e) {
-    // Still too large — strip base64 from ALL except the brand new pic
-  }
+  } catch (e) {}
 
-  // Try 3: keep only the new pic with full data, strip everything else
   toSave = gallery.slice(0, 20).map((p, idx) => {
-    if (idx === 0) return p // brand new pic keeps full data
+    if (idx === 0) return p
     return isDataUrl(p.imageUrl) ? stripBase64(p) : p
   })
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
     return
-  } catch (e) {
-    // Still too large — new pic itself might be huge base64
-  }
+  } catch (e) {}
 
-  // Try 4: strip base64 from EVERYTHING, keep only metadata
   toSave = gallery.slice(0, 20).map(p => isDataUrl(p.imageUrl) ? stripBase64(p) : p)
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
     return
-  } catch (e) {
-    // Desperate measures — remove oldest entries one by one
-  }
+  } catch (e) {}
 
-  // Try 5: keep removing oldest until it fits
   toSave = gallery.slice(0, 20).map(p => isDataUrl(p.imageUrl) ? stripBase64(p) : p)
   while (toSave.length > 0) {
     try {
@@ -85,8 +74,6 @@ function saveToGallery(pic: SavedPicture) {
       toSave.pop()
     }
   }
-
-  // Nothing worked. At least we didn't wipe existing data.
   console.error('Failed to save gallery: quota exceeded even with stripped data')
 }
 
@@ -101,7 +88,7 @@ function removeFromGallery(id: string) {
 
 export default function PictureStoryPage() {
   const [imageData, setImageData] = useState<string | null>(null)
-  const [imageProvider, setImageProvider] = useState<string>('pollinations')
+  const [imageProvider, setImageProvider] = useState<string>('openai')
   const [storyHints, setStoryHints] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
   const [hintLoading, setHintLoading] = useState(false)
@@ -112,12 +99,12 @@ export default function PictureStoryPage() {
   const [gallery, setGallery] = useState<SavedPicture[]>([])
   const [reviewPicture, setReviewPicture] = useState<SavedPicture | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('pollinations')
+  const [selectedProvider, setSelectedProvider] = useState<ImageProvider>('openai')
 
   // Manual generation mode state
   const [showManualModal, setShowManualModal] = useState(false)
   const [manualPrompt, setManualPrompt] = useState('')
-  const [manualProvider, setManualProvider] = useState<'pollinations' | 'openai' | 'gemini'>('openai')
+  const [manualProvider, setManualProvider] = useState<ImageProvider>('openai')
   const [promptGenerating, setPromptGenerating] = useState(false)
   const [imageCreating, setImageCreating] = useState(false)
 
@@ -137,7 +124,6 @@ export default function PictureStoryPage() {
       const result = await generateImage(prompt, selectedProvider)
       setImageData(result.imageUrl)
       setImageProvider(result.provider)
-      // Auto-save to gallery
       const pic: SavedPicture = {
         id: Date.now().toString(),
         imageUrl: result.imageUrl,
@@ -149,10 +135,7 @@ export default function PictureStoryPage() {
       setGallery(loadGallery())
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
-      const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
-      setError(isTimeout
-        ? `${msg} — try Pollinations.ai for faster results.`
-        : msg)
+      setError(msg)
     } finally {
       setGenerating(false)
     }
@@ -181,10 +164,7 @@ export default function PictureStoryPage() {
       setGallery(loadGallery())
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
-      const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
-      setError(isTimeout
-        ? `${msg} — try Pollinations.ai for faster results.`
-        : msg)
+      setError(msg)
     } finally {
       setGenerating(false)
     }
@@ -197,7 +177,6 @@ export default function PictureStoryPage() {
     try {
       const hints = await generateStoryHints(imageDescription)
       setStoryHints(hints)
-      // Update gallery entry with hints
       const current = loadGallery()
       const entry = current.find(p => p.prompt === imageDescription)
       if (entry) {
@@ -218,7 +197,7 @@ export default function PictureStoryPage() {
     setStoryHints(pic.hints || null)
     setReviewPicture(pic)
     setShowGallery(false)
-    setShowPrompt(!pic.imageUrl) // auto-show prompt if image was stripped
+    setShowPrompt(!pic.imageUrl)
   }
 
   const handleDelete = (id: string) => {
@@ -226,7 +205,6 @@ export default function PictureStoryPage() {
     setGallery(loadGallery())
   }
 
-  // Manual mode: generate a prompt
   const handleGenerateManualPrompt = async () => {
     setPromptGenerating(true)
     try {
@@ -239,7 +217,6 @@ export default function PictureStoryPage() {
     }
   }
 
-  // Manual mode: generate a difficult prompt
   const handleGenerateDifficultManualPrompt = async () => {
     setPromptGenerating(true)
     try {
@@ -252,7 +229,6 @@ export default function PictureStoryPage() {
     }
   }
 
-  // Manual mode: create image from current prompt
   const handleCreateManualImage = async () => {
     if (!manualPrompt.trim()) return
     setImageCreating(true)
@@ -277,18 +253,13 @@ export default function PictureStoryPage() {
       setShowManualModal(false)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to create image'
-      // Show a friendly message if it looks like a timeout
-      const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
-      setError(isTimeout
-        ? `${msg} — try Pollinations.ai for faster results.`
-        : msg)
+      setError(msg)
       setShowManualModal(false)
     } finally {
       setImageCreating(false)
     }
   }
 
-  // Open manual modal - auto-generate prompt
   const handleOpenManual = async () => {
     setManualPrompt('')
     setManualProvider(selectedProvider)
@@ -468,7 +439,7 @@ export default function PictureStoryPage() {
         {generating && !imageData && (
           <div className="text-center py-20">
             <div className="spinner mx-auto mb-4" />
-            <p className="text-lg text-foreground/60">Creating a fun picture for you...</p>
+            <p className="text-lg text-foreground/60">Creating a fun picture... (this may take 30-60 seconds)</p>
           </div>
         )}
 
@@ -540,7 +511,7 @@ export default function PictureStoryPage() {
             </div>
             <h2 className="text-2xl font-bold mb-3">Ready for a Story?</h2>
             <p className="text-lg text-foreground/60 max-w-md mx-auto">
-              Click "Generate Picture" to get a fun picture, then tell your story about it!
+              Click "Generate" to get a fun picture, then tell your story about it!
             </p>
           </div>
         )}
@@ -562,18 +533,18 @@ export default function PictureStoryPage() {
             </p>
 
             <div className="space-y-3">
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'openai' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                 <input
                   type="radio"
                   name="provider"
-                  value="pollinations"
-                  checked={selectedProvider === 'pollinations'}
-                  onChange={(e) => setSelectedProvider(e.target.value as any)}
+                  value="openai"
+                  checked={selectedProvider === 'openai'}
+                  onChange={(e) => setSelectedProvider(e.target.value as ImageProvider)}
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-semibold">Pollinations.ai <span className="text-xs font-normal text-kingdom-green">(Instant)</span></div>
-                  <div className="text-xs text-foreground/50">Free, fast, good quality. Recommended for kids.</div>
+                  <div className="font-semibold">OpenAI GPT Image</div>
+                  <div className="text-xs text-foreground/50">High quality. Takes ~30-60s.</div>
                 </div>
               </label>
 
@@ -583,27 +554,12 @@ export default function PictureStoryPage() {
                   name="provider"
                   value="gemini"
                   checked={selectedProvider === 'gemini'}
-                  onChange={(e) => setSelectedProvider(e.target.value as any)}
+                  onChange={(e) => setSelectedProvider(e.target.value as ImageProvider)}
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-semibold">Google Gemini Imagen <span className="text-xs font-normal text-orange-500">(Slow: 30-90s)</span></div>
-                  <div className="text-xs text-foreground/50">Highest quality, but very slow to generate.</div>
-                </div>
-              </label>
-
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'openai' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
-                <input
-                  type="radio"
-                  name="provider"
-                  value="openai"
-                  checked={selectedProvider === 'openai'}
-                  onChange={(e) => setSelectedProvider(e.target.value as any)}
-                  className="mt-1"
-                />
-                <div>
-                  <div className="font-semibold">OpenAI GPT Image <span className="text-xs font-normal text-orange-500">(Slow: 30-120s)</span></div>
-                  <div className="text-xs text-foreground/50">High quality, but very slow to generate.</div>
+                  <div className="font-semibold">Google Gemini Imagen</div>
+                  <div className="text-xs text-foreground/50">High quality. Takes ~30-90s.</div>
                 </div>
               </label>
             </div>
@@ -628,7 +584,6 @@ export default function PictureStoryPage() {
               </button>
             </div>
 
-            {/* Generate Prompt buttons */}
             <div className="flex gap-3 mb-4">
               <button
                 onClick={handleGenerateManualPrompt}
@@ -666,7 +621,6 @@ export default function PictureStoryPage() {
               </button>
             </div>
 
-            {/* Prompt textarea */}
             {manualPrompt && (
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-2">Edit Prompt:</label>
@@ -679,46 +633,33 @@ export default function PictureStoryPage() {
               </div>
             )}
 
-            {/* Provider selection */}
             <div className="mb-4">
               <label className="block text-sm font-semibold mb-2">Image Provider:</label>
               <div className="space-y-2">
-                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
-                  <input
-                    type="radio"
-                    name="manualProvider"
-                    value="gemini"
-                    checked={manualProvider === 'gemini'}
-                    onChange={(e) => setManualProvider(e.target.value as any)}
-                  />
-                  <div className="font-semibold">Google Gemini Imagen</div>
-                </label>
-
                 <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'openai' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                   <input
                     type="radio"
                     name="manualProvider"
                     value="openai"
                     checked={manualProvider === 'openai'}
-                    onChange={(e) => setManualProvider(e.target.value as any)}
+                    onChange={(e) => setManualProvider(e.target.value as ImageProvider)}
                   />
                   <div className="font-semibold">OpenAI GPT Image</div>
                 </label>
 
-                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                   <input
                     type="radio"
                     name="manualProvider"
-                    value="pollinations"
-                    checked={manualProvider === 'pollinations'}
-                    onChange={(e) => setManualProvider(e.target.value as any)}
+                    value="gemini"
+                    checked={manualProvider === 'gemini'}
+                    onChange={(e) => setManualProvider(e.target.value as ImageProvider)}
                   />
-                  <div className="font-semibold">Pollinations.ai</div>
+                  <div className="font-semibold">Google Gemini Imagen</div>
                 </label>
               </div>
             </div>
 
-            {/* Action buttons */}
             <div className="flex gap-3">
               <button
                 onClick={handleCreateManualImage}

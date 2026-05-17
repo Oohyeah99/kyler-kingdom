@@ -3,6 +3,9 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "functions": {
+    "api/generate-image.ts": {
+      "maxDuration": 120
+    },
     "api/**/*.ts": {
       "maxDuration": 60
     }

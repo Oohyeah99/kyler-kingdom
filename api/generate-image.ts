@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { prompt, provider = 'pollinations' } = req.body;
+  const { prompt, provider = 'openai' } = req.body;
 
   if (!prompt) {
     return res.status(400).json({ error: 'prompt is required' });
@@ -18,7 +18,6 @@ export default async function handler(req, res) {
 
   try {
     if (provider === 'openai' && OPENAI_API_KEY) {
-      // OpenAI Image Generation (gpt-image-1)
       const response = await fetch(OPENAI_URL, {
         method: 'POST',
         headers: {
@@ -30,8 +29,9 @@ export default async function handler(req, res) {
           prompt: prompt + ', cartoon style, colorful, kid-friendly, high quality illustration',
           n: 1,
           size: '1024x1024',
+          quality: 'low',
         }),
-        signal: AbortSignal.timeout(55000),
+        signal: AbortSignal.timeout(120000),
       });
 
       if (!response.ok) {
@@ -42,11 +42,10 @@ export default async function handler(req, res) {
       const data = await response.json();
       const imageUrl = data.data?.[0]?.url || (data.data?.[0]?.b64_json ? `data:image/png;base64,${data.data[0].b64_json}` : null);
       if (!imageUrl) {
-        return res.status(500).json({ error: 'No image URL in OpenAI response: ' + JSON.stringify(data), provider: 'openai' });
+        return res.status(500).json({ error: 'No image in OpenAI response: ' + JSON.stringify(data), provider: 'openai' });
       }
       return res.status(200).json({ imageUrl, provider: 'openai' });
     } else if (provider === 'gemini' && GEMINI_API_KEY) {
-      // Google Gemini Imagen
       const response = await fetch(GEMINI_URL, {
         method: 'POST',
         headers: {
@@ -61,7 +60,7 @@ export default async function handler(req, res) {
             personGeneration: 'allow_adult',
           },
         }),
-        signal: AbortSignal.timeout(55000),
+        signal: AbortSignal.timeout(120000),
       });
 
       if (!response.ok) {
@@ -71,7 +70,6 @@ export default async function handler(req, res) {
 
       const data = await response.json();
 
-      // Check for API-level errors embedded in response body
       if (data.error) {
         return res.status(500).json({
           error: `Gemini API error: ${JSON.stringify(data.error)}`,
@@ -90,17 +88,13 @@ export default async function handler(req, res) {
       const imageUrl = `data:image/png;base64,${predictions[0].bytesBase64Encoded}`;
       return res.status(200).json({ imageUrl, provider: 'gemini' });
     } else {
-      // Pollinations.ai (default, free, no API key needed)
-      const encodedPrompt = encodeURIComponent(prompt + ', cartoon style, colorful, kid-friendly, high quality illustration');
-      const seed = Math.floor(Math.random() * 100000);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&nologo=true&seed=${seed}`;
-      return res.status(200).json({ imageUrl, provider: 'pollinations' });
+      return res.status(400).json({ error: `Unknown provider: ${provider}`, provider });
     }
   } catch (err) {
     const isAbort = err instanceof Error && (err.name === 'AbortError' || err.message?.includes('timed out') || err.message?.includes('aborted'));
     return res.status(500).json({
       error: isAbort
-        ? `${provider} image generation timed out. Try Pollinations.ai for faster results.`
+        ? `${provider} image generation timed out. Please try again.`
         : (err instanceof Error ? err.message : 'Internal server error'),
       provider,
     });
