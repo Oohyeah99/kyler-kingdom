@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Sparkles, Lightbulb, RefreshCw, Loader2, Eye, EyeOff, Images, X, Trash2, Settings, Zap } from 'lucide-react'
-import { generateImage, generateStoryHints, generatePicturePrompt } from '../services/gemini'
+import { ArrowLeft, Sparkles, Lightbulb, Loader2, Eye, EyeOff, Images, X, Trash2, Settings, Zap } from 'lucide-react'
+import { generateImage, generatePicturePrompt } from '../services/gemini'
 
 type ImageProvider = 'openai' | 'gemini'
 
@@ -91,13 +91,11 @@ export default function PictureStoryPage() {
   const [imageProvider, setImageProvider] = useState<string>('openai')
   const [storyHints, setStoryHints] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
-  const [hintLoading, setHintLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [imageDescription, setImageDescription] = useState<string>('')
   const [showPrompt, setShowPrompt] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
   const [gallery, setGallery] = useState<SavedPicture[]>([])
-  const [reviewPicture, setReviewPicture] = useState<SavedPicture | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<ImageProvider>('openai')
 
@@ -117,7 +115,6 @@ export default function PictureStoryPage() {
     setError(null)
     setStoryHints(null)
     setShowPrompt(false)
-    setReviewPicture(null)
     try {
       const prompt = await generatePicturePrompt()
       setImageDescription(prompt)
@@ -146,7 +143,6 @@ export default function PictureStoryPage() {
     setError(null)
     setStoryHints(null)
     setShowPrompt(false)
-    setReviewPicture(null)
     try {
       const prompt = await generatePicturePrompt('difficult')
       setImageDescription(prompt)
@@ -170,32 +166,10 @@ export default function PictureStoryPage() {
     }
   }
 
-  const handleGetHints = async () => {
-    if (!imageDescription) return
-    setHintLoading(true)
-    setError(null)
-    try {
-      const hints = await generateStoryHints(imageDescription)
-      setStoryHints(hints)
-      const current = loadGallery()
-      const entry = current.find(p => p.prompt === imageDescription)
-      if (entry) {
-        entry.hints = hints
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(current))
-        setGallery(current)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setHintLoading(false)
-    }
-  }
-
   const handleReview = (pic: SavedPicture) => {
     setImageData(pic.imageUrl || null)
     setImageDescription(pic.prompt)
     setStoryHints(pic.hints || null)
-    setReviewPicture(pic)
     setShowGallery(false)
     setShowPrompt(!pic.imageUrl)
   }
@@ -235,7 +209,6 @@ export default function PictureStoryPage() {
     setError(null)
     setStoryHints(null)
     setShowPrompt(false)
-    setReviewPicture(null)
     try {
       setImageDescription(manualPrompt)
       const result = await generateImage(manualPrompt, manualProvider)
@@ -398,36 +371,6 @@ export default function PictureStoryPage() {
             )}
           </button>
 
-          {imageData && (
-            <button
-              onClick={handleGetHints}
-              disabled={hintLoading}
-              className="btn-kingdom btn-kingdom-green"
-            >
-              {hintLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Thinking...
-                </>
-              ) : (
-                <>
-                  <Lightbulb className="w-5 h-5 mr-2" />
-                  Give Me Hints!
-                </>
-              )}
-            </button>
-          )}
-
-          {imageData && !reviewPicture && (
-            <button
-              onClick={handleGenerateImage}
-              disabled={generating}
-              className="btn-kingdom !bg-kingdom-sky !text-white hover:!bg-kingdom-sky/90"
-            >
-              <RefreshCw className="w-5 h-5 mr-2" />
-              New Picture
-            </button>
-          )}
         </div>
 
         {error && (
@@ -480,13 +423,6 @@ export default function PictureStoryPage() {
                     Show prompt
                   </button>
                 )}
-              </div>
-            )}
-
-            {hintLoading && (
-              <div className="text-center py-8">
-                <div className="spinner mx-auto mb-4" />
-                <p className="text-lg text-foreground/60">Thinking of story hints...</p>
               </div>
             )}
 

@@ -371,7 +371,7 @@ export default function QAPage() {
                         <p className="text-xs text-foreground/40 font-semibold mb-1">
                           #{index + 1}
                         </p>
-                        <p className="text-base font-medium text-foreground leading-snug">
+                        <p className="text-lg font-medium text-foreground leading-snug">
                           {q.text}
                         </p>
                       </div>
