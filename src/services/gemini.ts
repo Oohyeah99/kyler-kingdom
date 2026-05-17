@@ -20,7 +20,7 @@ export async function generateImage(prompt: string, provider: 'pollinations' | '
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, provider }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(120000),
   })
 
   if (!response.ok) {

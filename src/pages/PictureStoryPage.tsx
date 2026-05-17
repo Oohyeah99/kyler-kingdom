@@ -112,7 +112,7 @@ export default function PictureStoryPage() {
   const [gallery, setGallery] = useState<SavedPicture[]>([])
   const [reviewPicture, setReviewPicture] = useState<SavedPicture | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('openai')
+  const [selectedProvider, setSelectedProvider] = useState<'pollinations' | 'openai' | 'gemini'>('pollinations')
 
   // Manual generation mode state
   const [showManualModal, setShowManualModal] = useState(false)
@@ -151,7 +151,7 @@ export default function PictureStoryPage() {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
       const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
       setError(isTimeout
-        ? `${msg} — Gemini can be slow. Try switching to OpenAI DALL-E 3 or Pollinations.ai for faster results.`
+        ? `${msg} — try Pollinations.ai for faster results.`
         : msg)
     } finally {
       setGenerating(false)
@@ -183,7 +183,7 @@ export default function PictureStoryPage() {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
       const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
       setError(isTimeout
-        ? `${msg} — Gemini can be slow. Try switching to OpenAI DALL-E 3 or Pollinations.ai for faster results.`
+        ? `${msg} — try Pollinations.ai for faster results.`
         : msg)
     } finally {
       setGenerating(false)
@@ -280,7 +280,7 @@ export default function PictureStoryPage() {
       // Show a friendly message if it looks like a timeout
       const isTimeout = msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('aborted') || msg.toLowerCase().includes('504')
       setError(isTimeout
-        ? `${msg} — Gemini can be slow. Try switching to OpenAI DALL-E 3 or Pollinations.ai for faster results.`
+        ? `${msg} — try Pollinations.ai for faster results.`
         : msg)
       setShowManualModal(false)
     } finally {
@@ -562,6 +562,21 @@ export default function PictureStoryPage() {
             </p>
 
             <div className="space-y-3">
+              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
+                <input
+                  type="radio"
+                  name="provider"
+                  value="pollinations"
+                  checked={selectedProvider === 'pollinations'}
+                  onChange={(e) => setSelectedProvider(e.target.value as any)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="font-semibold">Pollinations.ai <span className="text-xs font-normal text-kingdom-green">(Instant)</span></div>
+                  <div className="text-xs text-foreground/50">Free, fast, good quality. Recommended for kids.</div>
+                </div>
+              </label>
+
               <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'gemini' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
                 <input
                   type="radio"
@@ -572,8 +587,8 @@ export default function PictureStoryPage() {
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-semibold">Google Gemini Imagen</div>
-                  <div className="text-xs text-foreground/50">High quality, detailed images.</div>
+                  <div className="font-semibold">Google Gemini Imagen <span className="text-xs font-normal text-orange-500">(Slow: 30-90s)</span></div>
+                  <div className="text-xs text-foreground/50">Highest quality, but very slow to generate.</div>
                 </div>
               </label>
 
@@ -587,23 +602,8 @@ export default function PictureStoryPage() {
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-semibold">OpenAI DALL-E 3</div>
-                  <div className="text-xs text-foreground/50">Higher quality, more detailed images.</div>
-                </div>
-              </label>
-
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${selectedProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
-                <input
-                  type="radio"
-                  name="provider"
-                  value="pollinations"
-                  checked={selectedProvider === 'pollinations'}
-                  onChange={(e) => setSelectedProvider(e.target.value as any)}
-                  className="mt-1"
-                />
-                <div>
-                  <div className="font-semibold">Pollinations.ai</div>
-                  <div className="text-xs text-foreground/50">Free, no API key needed. Good quality, fast.</div>
+                  <div className="font-semibold">OpenAI GPT Image <span className="text-xs font-normal text-orange-500">(Slow: 30-120s)</span></div>
+                  <div className="text-xs text-foreground/50">High quality, but very slow to generate.</div>
                 </div>
               </label>
             </div>
@@ -702,7 +702,7 @@ export default function PictureStoryPage() {
                     checked={manualProvider === 'openai'}
                     onChange={(e) => setManualProvider(e.target.value as any)}
                   />
-                  <div className="font-semibold">OpenAI DALL-E 3</div>
+                  <div className="font-semibold">OpenAI GPT Image</div>
                 </label>
 
                 <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${manualProvider === 'pollinations' ? 'border-kingdom-purple bg-kingdom-purple/5' : 'border-border hover:border-foreground/20'}`}>
