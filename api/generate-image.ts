@@ -26,10 +26,9 @@ export default async function handler(req, res) {
           'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'dall-e-3',
+          model: 'dall-e-2',
           prompt: prompt + ', cartoon style, colorful, kid-friendly, high quality illustration',
           size: '1024x1024',
-          quality: 'standard',
           n: 1,
         }),
         signal: AbortSignal.timeout(25000),
