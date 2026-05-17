@@ -2,7 +2,7 @@
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const OPENAI_URL = 'https://api.openai.com/v1/images/generations';
-const GEMINI_MODEL = 'imagen-3.0-generate-002';
+const GEMINI_MODEL = 'imagen-4.0-fast-generate-001';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:predict`;
 
 export default async function handler(req, res) {
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     if (provider === 'openai' && OPENAI_API_KEY) {
-      // OpenAI DALL-E 3
+      // OpenAI Image Generation (gpt-image-1)
       const response = await fetch(OPENAI_URL, {
         method: 'POST',
         headers: {
@@ -26,12 +26,12 @@ export default async function handler(req, res) {
           'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'dall-e-2',
+          model: 'gpt-image-1',
           prompt: prompt + ', cartoon style, colorful, kid-friendly, high quality illustration',
-          size: '1024x1024',
           n: 1,
+          size: '1024x1024',
         }),
-        signal: AbortSignal.timeout(25000),
+        signal: AbortSignal.timeout(55000),
       });
 
       if (!response.ok) {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       }
 
       const data = await response.json();
-      const imageUrl = data.data?.[0]?.url;
+      const imageUrl = data.data?.[0]?.url || (data.data?.[0]?.b64_json ? `data:image/png;base64,${data.data[0].b64_json}` : null);
       if (!imageUrl) {
         return res.status(500).json({ error: 'No image URL in OpenAI response: ' + JSON.stringify(data), provider: 'openai' });
       }
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
             personGeneration: 'allow_adult',
           },
         }),
-        signal: AbortSignal.timeout(25000),
+        signal: AbortSignal.timeout(55000),
       });
 
       if (!response.ok) {
