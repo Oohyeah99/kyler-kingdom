@@ -6,6 +6,7 @@ import PictureStoryPage from './pages/PictureStoryPage'
 import PatternPhonicsPage from './pages/PatternPhonicsPage'
 import QAPage from './pages/QAPage'
 import HeartInSyncPage from './pages/HeartInSyncPage'
+import SchedulePage from './pages/SchedulePage'
 
 function App() {
   useEffect(() => {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/pattern-phonics" element={<PatternPhonicsPage />} />
         <Route path="/qa-practice" element={<QAPage />} />
         <Route path="/heart-in-sync" element={<HeartInSyncPage />} />
+        <Route path="/schedule" element={<SchedulePage />} />
       </Routes>
     </BrowserRouter>
   )

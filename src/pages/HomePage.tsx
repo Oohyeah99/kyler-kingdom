@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Crown, Sparkles, LetterText, MessageCircle, Heart, Settings, X, Type } from 'lucide-react'
+import { Crown, Sparkles, LetterText, MessageCircle, Heart, Calendar, Settings, X, Type } from 'lucide-react'
 import { loadSettings, saveSettings } from '../lib/settings'
 
 const tools = [
@@ -35,6 +35,14 @@ const tools = [
     icon: Heart,
     color: 'red',
     path: '/heart-in-sync',
+  },
+  {
+    id: 'schedule',
+    name: "Kyler's Schedule",
+    description: 'Plan your week and track daily habits!',
+    icon: Calendar,
+    color: 'sky',
+    path: '/schedule',
   },
 ]
 
