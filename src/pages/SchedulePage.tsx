@@ -828,11 +828,20 @@ export default function SchedulePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {/* Today Card */}
           <div className="bg-card border-2 border-kingdom-gold/50 rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <CalendarIcon className="w-4 h-4 text-kingdom-gold" />
-              <h2 className="text-sm font-bold text-foreground">
-                Today: {DAY_NAMES[todayDow]}, {formatDate(todayStr)}
-              </h2>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-kingdom-gold" />
+                <h2 className="text-sm font-bold text-foreground">
+                  Today: {DAY_NAMES[todayDow]}, {formatDate(todayStr)}
+                </h2>
+              </div>
+              <button
+                onClick={() => openAddEvent(todayDow)}
+                className="p-1 rounded-lg hover:bg-foreground/5 text-foreground/40 hover:text-kingdom-gold transition-colors"
+                title="Add event"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div className="space-y-1 mb-2">
@@ -844,21 +853,13 @@ export default function SchedulePage() {
                 ))
               )}
             </div>
-
-            <button
-              onClick={() => openAddEvent(todayDow)}
-              className="btn-kingdom btn-kingdom-green w-full text-xs py-1.5"
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              Add Event
-            </button>
           </div>
 
-          {/* Upcoming Events Card */}
+          {/* Upcoming Card */}
           <div className="bg-card border-2 border-kingdom-red/30 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <FileText className="w-4 h-4 text-kingdom-red" />
-              <h3 className="text-sm font-bold text-kingdom-red">Upcoming Events</h3>
+              <h3 className="text-sm font-bold text-kingdom-red">Upcoming</h3>
             </div>
             {upcomingEvents.length === 0 ? (
               <p className="text-xs text-foreground/30 py-2 text-center">No upcoming events</p>
@@ -868,7 +869,7 @@ export default function SchedulePage() {
                   const days = ev.date ? daysBetween(ev.date, todayStr) : null
                   return (
                     <div key={ev.id} className="p-1.5 rounded-lg bg-kingdom-red/5 hover:bg-kingdom-red/10 transition-colors cursor-pointer" onClick={() => openEditEvent(ev)}>
-                      <p className="text-xs font-medium text-foreground truncate">
+                      <p className="text-xs font-medium text-foreground break-words">
                         {ev.date ? `${formatDate(ev.date)}: ${ev.title}` : ev.title}
                       </p>
                       {days !== null && (
@@ -887,13 +888,19 @@ export default function SchedulePage() {
           <div className="bg-card border-2 border-kingdom-purple/30 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-bold text-kingdom-purple">Priority Practice</h3>
+              <button
+                onClick={() => { setNewPriorityItem(''); setShowPriorityModal(true) }}
+                className="p-1 rounded-lg hover:bg-foreground/5 text-foreground/40 hover:text-kingdom-purple transition-colors"
+                title="Add practice item"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <p className="text-xs text-foreground/40 mb-2">Practice items in order</p>
 
-            <div className="space-y-1 mb-2">
+            <div className="space-y-1">
               {priorityItems.map((item, index) => (
-                <div key={index} className="flex items-center gap-1.5 p-1.5 rounded-lg bg-kingdom-purple/5 group">
-                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                <div key={index} className="flex items-start gap-1.5 p-1.5 rounded-lg bg-kingdom-purple/5 group">
+                  <div className="flex flex-col gap-0.5 flex-shrink-0 pt-0.5">
                     <button
                       onClick={() => movePriorityItem(index, 'up')}
                       disabled={index === 0}
@@ -911,10 +918,10 @@ export default function SchedulePage() {
                       <ChevronDown className="w-3 h-3" />
                     </button>
                   </div>
-                  <span className="text-xs text-foreground flex-1 truncate">{item}</span>
+                  <span className="text-xs text-foreground flex-1 break-words leading-snug">{item}</span>
                   <button
                     onClick={() => removePriorityItem(index)}
-                    className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-400 hover:text-red-500 transition-all"
+                    className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-400 hover:text-red-500 transition-all flex-shrink-0"
                     title="Remove"
                   >
                     <X className="w-3 h-3" />
@@ -924,16 +931,6 @@ export default function SchedulePage() {
               {priorityItems.length === 0 && (
                 <p className="text-xs text-foreground/30 py-2 text-center">No practice items yet</p>
               )}
-            </div>
-
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => { setNewPriorityItem(''); setShowPriorityModal(true) }}
-                className="btn-kingdom btn-kingdom-purple w-full text-xs py-1"
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                Add Item
-              </button>
             </div>
           </div>
 
