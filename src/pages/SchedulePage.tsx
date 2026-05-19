@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowLeft, Plus, X, ChevronLeft, ChevronRight,
+  ArrowLeft, Plus, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Clock, FileText, Check, Trash2, Edit2, Calendar as CalendarIcon
 } from 'lucide-react'
 
@@ -565,6 +565,7 @@ export default function SchedulePage() {
   const [monthShowCompetition, setMonthShowCompetition] = useState(true)
   const [priorityItems, setPriorityItems] = useState<string[]>([])
   const [newPriorityItem, setNewPriorityItem] = useState('')
+  const [showPriorityModal, setShowPriorityModal] = useState(false)
 
   const todayStr = getToday()
   const todayDow = getTodayDayOfWeek()
@@ -824,7 +825,7 @@ export default function SchedulePage() {
 
       <main className="max-w-6xl mx-auto px-6 pb-16">
         {/* Today + Upcoming Events + Priority Practice + Habits row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {/* Today Card */}
           <div className="bg-card border-2 border-kingdom-gold/50 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -899,7 +900,7 @@ export default function SchedulePage() {
                       className="p-0.5 rounded hover:bg-foreground/10 text-foreground/40 hover:text-kingdom-purple disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Move up"
                     >
-                      <ChevronLeft className="w-3 h-3 -rotate-90" />
+                      <ChevronUp className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => movePriorityItem(index, 'down')}
@@ -907,7 +908,7 @@ export default function SchedulePage() {
                       className="p-0.5 rounded hover:bg-foreground/10 text-foreground/40 hover:text-kingdom-purple disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Move down"
                     >
-                      <ChevronLeft className="w-3 h-3 rotate-90" />
+                      <ChevronDown className="w-3 h-3" />
                     </button>
                   </div>
                   <span className="text-xs text-foreground flex-1 truncate">{item}</span>
@@ -926,20 +927,12 @@ export default function SchedulePage() {
             </div>
 
             <div className="flex gap-1.5">
-              <input
-                type="text"
-                value={newPriorityItem}
-                onChange={(e) => setNewPriorityItem(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') addPriorityItem() }}
-                className="flex-1 p-1.5 text-xs rounded-lg border-2 border-border bg-background text-foreground focus:border-kingdom-purple focus:outline-none"
-                placeholder="Add practice item..."
-              />
               <button
-                onClick={addPriorityItem}
-                disabled={!newPriorityItem.trim()}
-                className="btn-kingdom btn-kingdom-purple !px-2 !py-1 text-xs disabled:opacity-50"
+                onClick={() => { setNewPriorityItem(''); setShowPriorityModal(true) }}
+                className="btn-kingdom btn-kingdom-purple w-full text-xs py-1"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-3 h-3 mr-1" />
+                Add Item
               </button>
             </div>
           </div>
@@ -1139,6 +1132,48 @@ export default function SchedulePage() {
           onDelete={handleDeleteHabit}
           onClose={() => { setShowHabitModal(false); setEditingHabit(null) }}
         />
+      )}
+
+      {/* Priority Practice Modal */}
+      {showPriorityModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4" onClick={() => setShowPriorityModal(false)}>
+          <div className="bg-background rounded-2xl w-full max-w-sm p-6 shadow-2xl border-2 border-border" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gradient">Add Practice Item</h2>
+              <button onClick={() => setShowPriorityModal(false)} className="p-2 rounded-lg hover:bg-foreground/5">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div>
+              <input
+                type="text"
+                value={newPriorityItem}
+                onChange={(e) => setNewPriorityItem(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && newPriorityItem.trim()) { addPriorityItem(); setShowPriorityModal(false) } }}
+                className="w-full p-3 rounded-xl border-2 border-border bg-background text-foreground focus:border-kingdom-purple focus:outline-none"
+                placeholder="e.g. Scales, Sight reading"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { addPriorityItem(); setShowPriorityModal(false) }}
+                disabled={!newPriorityItem.trim()}
+                className="flex-1 btn-kingdom btn-kingdom-purple disabled:opacity-50"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => setShowPriorityModal(false)}
+                className="btn-kingdom !bg-foreground/10 !text-foreground hover:!bg-foreground/20"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
